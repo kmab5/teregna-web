@@ -33,6 +33,41 @@ export function useDiscovery(search: string, category: string | null) {
   });
 }
 
+/**
+ * The categories that actually exist, read from the live providers.
+ *
+ * These were previously a hardcoded guess (barber, tailor, clinic, laundry,
+ * repair), which meant the filters offered categories nobody used and hid ones
+ * that did exist. Category is free text - providers type their own during
+ * onboarding and can edit it in settings - so the only correct source is the
+ * data.
+ */
+export function useCategories() {
+  return useQuery({
+    queryKey: qk.categories(),
+    queryFn: async (): Promise<string[]> => {
+      const { data, error } = await getClient()
+        .from("provider_public")
+        .select("category")
+        .not("category", "is", null);
+      if (error) throw error;
+
+      // Case-insensitive dedupe, keeping the first spelling a provider used.
+      const seen = new Map<string, string>();
+      for (const row of (data ?? []) as { category: string | null }[]) {
+        const value = row.category?.trim();
+        if (!value) continue;
+        const key = value.toLowerCase();
+        if (!seen.has(key)) seen.set(key, value);
+      }
+      return [...seen.values()].sort((a, b) =>
+        a.localeCompare(b, undefined, { sensitivity: "base" }),
+      );
+    },
+    staleTime: 5 * 60_000,
+  });
+}
+
 export function useProviderItems(providerId: string) {
   return useQuery({
     queryKey: qk.providerItems(providerId),

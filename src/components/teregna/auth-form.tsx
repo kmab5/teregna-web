@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Logo } from "./logo";
 import { AuthDivider, GoogleButton } from "./oauth-buttons";
 import { getClient } from "@/lib/supabase/client";
@@ -16,18 +16,27 @@ export function AuthForm({
   audience,
   title,
   subtitle,
+  nextParam,
+  errorParam,
 }: {
   mode: "signin" | "signup";
   audience: "receiver" | "provider";
   title: string;
   subtitle: string;
+  /**
+   * Read on the server and passed down rather than pulled from
+   * useSearchParams(). That hook opts the whole subtree into client-side
+   * rendering, which meant the entire sign-in form sat behind an empty
+   * Suspense fallback and flashed blank before hydrating.
+   */
+  nextParam?: string;
+  errorParam?: string;
 }) {
   const router = useRouter();
-  const params = useSearchParams();
   // Sanitised: a stale or hostile ?next must not send someone back to a login
   // page (a client-side loop) or off-site (an open redirect).
   const next = safeNext(
-    params.get("next"),
+    nextParam ?? null,
     audience === "provider" ? "/provider" : "/browse",
   );
 
@@ -39,7 +48,7 @@ export function AuthForm({
 
   // The callback route parks a reason here when a round trip fails, so the
   // person lands on an explanation rather than a silently reset form.
-  const callbackError = params.get("error");
+  const callbackError = errorParam;
   const callbackMessage =
     callbackError === "cancelled"
       ? "You cancelled the Google sign-in. Try again, or use your email."
@@ -97,11 +106,7 @@ export function AuthForm({
       ) : null}
 
       <div className="mt-8 space-y-4">
-        <GoogleButton
-          next={next}
-	  hasOfficialMark
-          label={mode === "signup" ? "Sign up with Google" : "Continue with Google"}
-        />
+        <GoogleButton next={next} />
         <AuthDivider />
       </div>
 

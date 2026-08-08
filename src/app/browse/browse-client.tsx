@@ -2,19 +2,29 @@
 
 import { useState } from "react";
 import { Search, SearchX } from "lucide-react";
-import { useDiscovery } from "@/lib/queries";
+import { useCategories, useDiscovery } from "@/lib/queries";
 import { ProviderCard } from "@/components/teregna/provider-card";
 import { EmptyState } from "@/components/teregna/empty-state";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-const CATEGORIES = ["barber", "tailor", "clinic", "laundry", "repair"];
-
 export function BrowseClient() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string | null>(null);
-  const { data, isPending, isError } = useDiscovery(search, category);
+  const { data: categories } = useCategories();
+
+  /**
+   * A provider can rename their category or close at any time, which can strand
+   * a selection that no longer exists - showing an empty list with no clue why.
+   *
+   * Derived rather than corrected in an effect: the selection is only ever
+   * valid relative to the current category list, so there is nothing to store.
+   */
+  const activeCategory =
+    category && categories?.includes(category) ? category : null;
+
+  const { data, isPending, isError } = useDiscovery(search, activeCategory);
 
   return (
     <>
@@ -33,37 +43,41 @@ export function BrowseClient() {
           />
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setCategory(null)}
-            aria-pressed={category === null}
-            className={cn(
-              "rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
-              category === null
-                ? "bg-primary text-on-primary"
-                : "bg-muted text-ink-muted hover:text-ink",
-            )}
-          >
-            All
-          </button>
-          {CATEGORIES.map((c) => (
+        {/* Only rendered once we know what exists. One category is not a
+            filter - it is the whole list - so the row stays hidden. */}
+        {categories && categories.length > 1 ? (
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by category">
             <button
-              key={c}
               type="button"
-              onClick={() => setCategory(category === c ? null : c)}
-              aria-pressed={category === c}
+              onClick={() => setCategory(null)}
+              aria-pressed={activeCategory === null}
               className={cn(
-                "rounded-full px-3 py-1.5 text-sm font-medium capitalize transition-colors",
-                category === c
+                "rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+                activeCategory === null
                   ? "bg-primary text-on-primary"
                   : "bg-muted text-ink-muted hover:text-ink",
               )}
             >
-              {c}
+              All
             </button>
-          ))}
-        </div>
+            {categories.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCategory(activeCategory === c ? null : c)}
+                aria-pressed={activeCategory === c}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-sm font-medium capitalize transition-colors",
+                  activeCategory === c
+                    ? "bg-primary text-on-primary"
+                    : "bg-muted text-ink-muted hover:text-ink",
+                )}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-8">
@@ -90,7 +104,7 @@ export function BrowseClient() {
             icon={SearchX}
             title="Nothing matches that yet"
             body={
-              search || category
+              search || activeCategory
                 ? "Try a different name, or clear the filters."
                 : "No providers are open right now. Check back shortly."
             }

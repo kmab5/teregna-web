@@ -46,11 +46,11 @@ export function ProviderShell({
   const { setTheme } = useTheme();
 
   return (
-    <div className="min-h-dvh bg-surface-2">
-      <header className="border-b border-border bg-ink text-white">
+    <div className="min-h-dvh bg-bg">
+      <header className="border-b border-chrome-border bg-chrome text-on-chrome">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
           <span className="flex items-center gap-2.5 text-sm font-semibold">
-            <Mark className="h-4 w-8 text-white/80" />
+            <Mark className="h-4 w-8 text-on-chrome" />
             {provider?.name ?? "Your business"}
           </span>
 
@@ -59,14 +59,16 @@ export function ProviderShell({
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
                 provider.is_active
-                  ? "bg-accent/20 text-white"
-                  : "bg-white/15 text-white/80",
+                  ? "bg-accent/25 text-on-chrome"
+                  : "bg-chrome-border text-on-chrome-muted",
               )}
             >
               <span
                 className={cn(
                   "size-1.5 rounded-full",
-                  provider.is_active ? "bg-accent animate-pulse-dot" : "bg-white/60",
+                  provider.is_active
+                    ? "bg-accent animate-pulse-dot"
+                    : "bg-on-chrome-muted",
                 )}
                 aria-hidden
               />
@@ -85,7 +87,7 @@ export function ProviderShell({
                 )
               }
               aria-label="Switch theme"
-              className="rounded-[var(--radius-sm)] p-2 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+              className="rounded-[var(--radius-sm)] p-2 text-on-chrome-muted transition-colors hover:bg-chrome-border hover:text-on-chrome"
             >
               <Moon className="size-4 dark:hidden" aria-hidden />
               <Sun className="hidden size-4 dark:block" aria-hidden />
@@ -94,7 +96,7 @@ export function ProviderShell({
             {/* A provider is also a person who can queue elsewhere. */}
             <Link
               href="/browse"
-              className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-2 text-xs font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+              className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-2 text-xs font-medium text-on-chrome-muted transition-colors hover:bg-chrome-border hover:text-on-chrome"
             >
               Customer view
               <ExternalLink className="size-3" aria-hidden />
@@ -114,8 +116,8 @@ export function ProviderShell({
                     className={cn(
                       "flex shrink-0 items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors",
                       active
-                        ? "border-white text-white"
-                        : "border-transparent text-white/60 hover:text-white",
+                        ? "border-chrome-active text-chrome-active"
+                        : "border-transparent text-on-chrome-muted hover:text-on-chrome",
                     )}
                   >
                     <Icon className="size-4" aria-hidden />

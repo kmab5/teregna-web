@@ -55,21 +55,33 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY  <anon key>
 NEXT_PUBLIC_SITE_URL           https://teregna-web.vercel.app
 ```
 
-## 4. The official Google mark
+## 4. The button asset — already installed
 
-Google's branding guidelines require **their** asset on the button — a
-hand-drawn imitation is a trademark reproduction and can fail their OAuth
-verification review. So the button ships text-only.
+Google's official assets are in `public/google/`, byte-identical to the
+download, renamed only because the originals contain spaces, commas and `=` in
+their filenames, which are unusable in a URL.
 
-To add the real mark:
+The app renders Google's **complete button**, not their logo dropped into a
+Teregna button. That is forced by the asset pack itself: it contains **no bare
+"G"** — every file is a whole button — so composing a custom one would mean
+redrawing their mark, which their guidelines prohibit and their OAuth
+verification review can fail you for.
 
-1. Download it from <https://developers.google.com/identity/branding-guidelines>
-2. Save as `public/google-mark.svg`
-3. Pass `hasOfficialMark` in `src/components/teregna/auth-form.tsx`:
+Consequences worth knowing:
 
-```tsx
-<GoogleButton next={next} hasOfficialMark />
-```
+- The button keeps its own 180:40 proportions and sits centred rather than
+  spanning the form. Stretching it would distort the mark.
+- It reads "Sign in with Google" on the sign-up page too. That is the only text
+  variant Google ships.
+- It is served with a plain `<img>`, not `next/image`. `next/image` refuses SVG
+  unless `dangerouslyAllowSVG` is enabled, and loosening that project-wide for
+  two static first-party files is a worse trade. Nothing to optimise anyway —
+  the asset is already vector.
+- Light and dark variants both render, swapped by CSS, so there is no flash of
+  the wrong one.
+
+Other variants are already in `public/google/` if you want them:
+`icon-light.svg`, `icon-dark.svg` (icon-only, 40×40) and `signin-neutral.svg`.
 
 ## How the flow runs
 

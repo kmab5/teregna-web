@@ -3,6 +3,7 @@
  * blowing away the whole cache on every event.
  */
 export const qk = {
+  categories: () => ["categories"] as const,
   discovery: (search: string, category: string | null) =>
     ["discovery", search, category] as const,
   provider: (id: string) => ["provider", id] as const,

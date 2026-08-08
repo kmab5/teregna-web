@@ -28,6 +28,16 @@
   --destructive:   #B91C1C;
   --ring:          #6D28D9;
 
+  /* Provider chrome.
+     These are NOT the semantic text tokens. --ink inverts between themes, so
+     using it as a background gave the provider header white-on-near-white in
+     dark mode. Chrome stays dark in both themes; only its exact tone shifts. */
+  --chrome:           #2A1A4A;  /* on-chrome 15.6:1 */
+  --on-chrome:        #FFFFFF;
+  --on-chrome-muted:  #BDB4D4;  /* 7.9:1 on chrome */
+  --chrome-border:    #3D2E63;
+  --chrome-active:    #FFFFFF;
+
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
@@ -53,6 +63,16 @@
   --destructive:   #F87171;
   --ring:          #A78BFA;
 
+  /* Dark chrome is LIGHTER than the page (#141024), because you cannot recess
+     below near-black - elevation has to go up. #221B40 was tried first and only
+     reached 1.15:1 against the page, which read as no boundary at all. This
+     lands at 1.61:1 and reads as a real band while keeping text at 10:1. */
+  --chrome:           #38306E;  /* on-chrome 10.0:1, vs page 1.61:1 */
+  --on-chrome:        #F2ECFF;
+  --on-chrome-muted:  #B7ACD6;  /* 5.4:1 on chrome */
+  --chrome-border:    #4A4088;
+  --chrome-active:    #C4B5FD;  /* 6.3:1 on chrome */
+
   --elev-1: 0 1px 2px rgb(0 0 0 / 0.4);
   --elev-2: 0 4px 16px rgb(0 0 0 / 0.5);
 }
@@ -73,6 +93,11 @@
   --color-warning:     var(--warning);
   --color-destructive: var(--destructive);
   --color-ring:        var(--ring);
+  --color-chrome:            var(--chrome);
+  --color-on-chrome:         var(--on-chrome);
+  --color-on-chrome-muted:   var(--on-chrome-muted);
+  --color-chrome-border:     var(--chrome-border);
+  --color-chrome-active:     var(--chrome-active);
 
   --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
   --font-sans:    var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;

@@ -1,19 +1,25 @@
-import { Suspense } from "react";
 import { AuthForm } from "@/components/teregna/auth-form";
 
 /**
- * A separate door, not a separate identity. The same account signs in here;
- * the route decides which experience you land in.
+ * searchParams are read here, on the server, and passed to the form. Reading
+ * them with useSearchParams() inside the client component would defer the whole
+ * form behind a Suspense boundary and flash an empty page first.
  */
-export default function ProviderLoginPage() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string; error?: string }>;
+}) {
+  const { next, error } = await searchParams;
+
   return (
-    <Suspense>
-      <AuthForm
-        mode="signin"
-        audience="provider"
-        title="Provider sign in"
-        subtitle="Open your queue, manage what you offer, and see how the week went."
-      />
-    </Suspense>
+    <AuthForm
+      mode="signin"
+      audience="provider"
+      title="Provider sign in"
+      subtitle="Open your queue, manage what you offer, and see how the week went."
+      nextParam={next}
+      errorParam={error}
+    />
   );
 }
