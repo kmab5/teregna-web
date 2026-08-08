@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, ListOrdered } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { Mark } from "@/components/teregna/logo";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/teregna/site-header";
 import { getUser } from "@/lib/supabase/server";
@@ -27,7 +28,7 @@ export default async function LandingPage() {
           <div className="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-center">
             <div>
               <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-sm text-ink-muted">
-                <ListOrdered className="size-4 text-primary" aria-hidden />
+                <Mark className="h-3.5 w-7 text-primary" />
                 <span lang="am" className="am">ተረኛ</span>
                 <span>— the one whose turn it is</span>
               </p>

@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { Moon, Sun, ListOrdered } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
+import { Logo } from "./logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -24,10 +25,8 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
-        <Link href="/" className="flex items-center gap-2 font-display text-lg font-semibold">
-          <ListOrdered className="size-5 text-primary" aria-hidden />
-          Teregna
-          <span lang="am" className="am text-ink-muted">ተረኛ</span>
+        <Link href="/" aria-label="Teregna home">
+          <Logo />
         </Link>
 
         <nav className="ml-2 flex items-center gap-1" aria-label="Main">

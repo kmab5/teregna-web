@@ -1,0 +1,14 @@
+{
+  "name": "Teregna",
+  "short_name": "Teregna",
+  "description": "Find a provider, join their queue, and watch your place move.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF7FF",
+  "theme_color": "#6D28D9",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

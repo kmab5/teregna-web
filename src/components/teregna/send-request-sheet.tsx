@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -17,6 +17,12 @@ import { formatBirr } from "@/lib/format";
 import type { Item } from "@/lib/database.types";
 
 const PENDING_KEY = "teregna:pending-request";
+
+interface PendingRequest {
+  providerId: string;
+  selected: Record<string, number>;
+  note: string;
+}
 
 export function SendRequestSheet({
   providerId,
@@ -38,6 +44,39 @@ export function SendRequestSheet({
   // Generated once per compose attempt and reused on retry, so a double-tap or
   // a retry after a dropped connection cannot enqueue the same request twice.
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
+
+  /**
+   * Pick up where a guest left off.
+   *
+   * Choosing three services, being asked to sign in, and coming back to an
+   * empty sheet is the fastest way to lose someone - and the Google round trip
+   * makes that gap longer, not shorter. Selections are parked in
+   * sessionStorage before we send them away, and reclaimed when they return.
+   *
+   * The disable below is deliberate. The rule guards against cascading
+   * renders from state that should have been derived; this is a one-shot read
+   * of an external handoff that only exists after a full page navigation, so
+   * there is nothing to derive it from. Doing it during render instead would
+   * mean mutating sessionStorage in the render phase, which is worse.
+   */
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (!signedIn) return;
+    const raw = sessionStorage.getItem(PENDING_KEY);
+    if (!raw) return;
+    sessionStorage.removeItem(PENDING_KEY);
+
+    try {
+      const pending = JSON.parse(raw) as PendingRequest;
+      if (pending.providerId !== providerId) return;
+      setSelected(pending.selected ?? {});
+      setNote(pending.note ?? "");
+      setOpen(true);
+    } catch {
+      // A malformed entry is not worth surfacing; it is already cleared.
+    }
+  }, [signedIn, providerId]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const lines = useMemo(
     () => Object.entries(selected).map(([item_id, quantity]) => ({ item_id, quantity })),
@@ -92,11 +131,9 @@ export function SendRequestSheet({
    */
   function handleSubmit() {
     if (!signedIn) {
-      sessionStorage.setItem(
-        PENDING_KEY,
-        JSON.stringify({ providerId, lines, note }),
-      );
-      router.push(`/login?next=/p/${providerId}`);
+      const pending: PendingRequest = { providerId, selected, note };
+      sessionStorage.setItem(PENDING_KEY, JSON.stringify(pending));
+      router.push(`/login?next=${encodeURIComponent(`/p/${providerId}`)}`);
       return;
     }
     mutation.mutate();

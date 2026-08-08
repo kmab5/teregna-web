@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ListOrdered } from "lucide-react";
+import { Logo } from "./logo";
+import { AuthDivider, GoogleButton } from "./oauth-buttons";
 import { getClient } from "@/lib/supabase/client";
 import { safeNext } from "@/lib/routes";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,16 @@ export function AuthForm({
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // The callback route parks a reason here when a round trip fails, so the
+  // person lands on an explanation rather than a silently reset form.
+  const callbackError = params.get("error");
+  const callbackMessage =
+    callbackError === "cancelled"
+      ? "You cancelled the Google sign-in. Try again, or use your email."
+      : callbackError
+        ? "That sign-in did not complete. Try again, or use your email."
+        : null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -69,15 +80,32 @@ export function AuthForm({
 
   return (
     <main id="main" className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-4 py-12">
-      <Link href="/" className="mb-8 flex items-center gap-2 font-display text-lg font-semibold">
-        <ListOrdered className="size-5 text-primary" aria-hidden />
-        Teregna
+      <Link href="/" className="mb-8 inline-flex" aria-label="Teregna home">
+        <Logo />
       </Link>
 
       <h1 className="font-display text-2xl font-semibold">{title}</h1>
       <p className="mt-2 text-ink-muted">{subtitle}</p>
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+      {callbackMessage ? (
+        <p
+          role="alert"
+          className="mt-6 rounded-[var(--radius-sm)] bg-warning/10 px-3 py-2 text-sm text-warning"
+        >
+          {callbackMessage}
+        </p>
+      ) : null}
+
+      <div className="mt-8 space-y-4">
+        <GoogleButton
+          next={next}
+	  hasOfficialMark
+          label={mode === "signup" ? "Sign up with Google" : "Continue with Google"}
+        />
+        <AuthDivider />
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
         {mode === "signup" ? (
           <div className="space-y-2">
             <Label htmlFor="name">Your name</Label>

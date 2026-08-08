@@ -29,9 +29,29 @@ const ethiopic = Noto_Sans_Ethiopic({
 });
 
 export const metadata: Metadata = {
-  title: "Teregna — know your turn",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  title: {
+    default: "Teregna — know your turn",
+    template: "%s · Teregna",
+  },
   description:
-    "Find a provider, join their queue, and watch your place move in real time.",
+    "Find a provider, join their queue, and watch your place move. No standing in line, no calling ahead.",
+  applicationName: "Teregna",
+  manifest: "/site.webmanifest",
+  openGraph: {
+    title: "Teregna — know your turn",
+    description:
+      "Find a provider. Join their queue. Watch your place move.",
+    siteName: "Teregna",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Teregna" }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Teregna — know your turn",
+    description: "Find a provider. Join their queue. Watch your place move.",
+    images: ["/og-image.png"],
+  },
 };
 
 export const viewport: Viewport = {

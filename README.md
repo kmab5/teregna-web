@@ -59,6 +59,17 @@ Everything goes through the contract in `teregna-backend`:
 - **Errors** arrive as bare codes and are mapped to sentences in
   `src/lib/errors.ts`. A raw Postgres string never reaches a person.
 
+### Sign-in
+
+Email/password and **Google OAuth**. Both land on `/auth/callback`, which trades
+the PKCE code for a session cookie and returns the person to `?next=`,
+sanitised by `safeNext`.
+
+Google needs configuration in two consoles before it will work — the exact
+values are in [`docs/google-oauth.md`](docs/google-oauth.md). The button ships
+text-only because Google's branding guidelines require their own asset; that doc
+says where to get it and how to switch it on.
+
 ### Two surfaces, one identity
 
 `/provider/*` and the receiver routes are separate doors, not separate accounts.
@@ -131,9 +142,12 @@ Set per environment (Production / Preview / Development):
 |----------|-------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Environment's API URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key |
-| `NEXT_PUBLIC_SITE_URL` | For auth redirects |
+| `NEXT_PUBLIC_SITE_URL` | Auth redirects and OG image URLs |
 
 Then register the Vercel production **and** preview domains as allowed redirect
-URLs in Supabase Auth, or sign-in will bounce.
+URLs in Supabase Auth, or sign-in will bounce. Preview deploys need the wildcard
+`https://*-teregna-web.vercel.app/**` — without it, sign-in works in production
+and fails silently on every PR. Full list in
+[`docs/google-oauth.md`](docs/google-oauth.md).
 
 Point Preview at your staging Supabase branch and Production at production.

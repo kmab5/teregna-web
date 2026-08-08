@@ -11,9 +11,9 @@ import {
   Package,
   ChartColumn,
   Settings,
-  Store,
   ExternalLink,
 } from "lucide-react";
+import { Mark } from "./logo";
 import { cn } from "@/lib/utils";
 import type { Provider } from "@/lib/database.types";
 
@@ -49,8 +49,8 @@ export function ProviderShell({
     <div className="min-h-dvh bg-surface-2">
       <header className="border-b border-border bg-ink text-white">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
-          <span className="flex items-center gap-2 text-sm font-semibold">
-            <Store className="size-4" aria-hidden />
+          <span className="flex items-center gap-2.5 text-sm font-semibold">
+            <Mark className="h-4 w-8 text-white/80" />
             {provider?.name ?? "Your business"}
           </span>
 
