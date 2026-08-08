@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ListOrdered } from "lucide-react";
 import { getClient } from "@/lib/supabase/client";
+import { safeNext } from "@/lib/routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,7 +23,12 @@ export function AuthForm({
 }) {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") ?? (audience === "provider" ? "/provider" : "/browse");
+  // Sanitised: a stale or hostile ?next must not send someone back to a login
+  // page (a client-side loop) or off-site (an open redirect).
+  const next = safeNext(
+    params.get("next"),
+    audience === "provider" ? "/provider" : "/browse",
+  );
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

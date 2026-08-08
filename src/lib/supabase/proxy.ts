@@ -1,12 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { guardFor } from "@/lib/routes";
 
 /**
-* Refreshes the auth session on every request and guards the routes that
- * require a session.
+ * Refreshes the auth session on every request and guards the routes that
+ * require one.
  *
- * Hidden routes are convenience, not security. RLS decides what any request
- * can actually read or write, regardless of what the router allows.
+ * Route guards are convenience. RLS decides what any request can actually read
+ * or write, regardless of what the router allows.
  */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -32,20 +33,25 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
+  const { pathname, search } = request.nextUrl;
+  const guard = guardFor(pathname);
+
+  // Public and unguarded paths still get their session refreshed - they are
+  // just never redirected.
+  if (!guard) return response;
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname, search } = request.nextUrl;
-  const needsProvider = pathname.startsWith("/provider");
-  const needsReceiver = pathname.startsWith("/requests");
+  if (user) return response;
 
-  if (!user && (needsProvider || needsReceiver)) {
-    const url = request.nextUrl.clone();
-    url.pathname = needsProvider ? "/provider/login" : "/login";
-    url.searchParams.set("next", pathname + search);
-    return NextResponse.redirect(url);
-  }
-
-  return response;
+  // Built from scratch on purpose. Cloning nextUrl would carry the existing
+  // query string, so each hop would nest another ?next= inside the last one.
+  const url = new URL(
+    guard === "provider" ? "/provider/login" : "/login",
+    request.url,
+  );
+  url.searchParams.set("next", pathname + search);
+  return NextResponse.redirect(url);
 }

@@ -24,7 +24,8 @@ and anon key to paste in.
 | Command | Does |
 |---------|------|
 | `npm run dev` | Dev server |
-| `npm run verify` | Typecheck + lint + build. Run before pushing |
+| `npm test` | Route-guard regression tests |
+| `npm run verify` | Typecheck + lint + test + build. Run before pushing |
 | `npm run build` | Production build |
 
 ## Stack
@@ -56,6 +57,22 @@ signed-in user with no provider row is sent to onboarding.
 Route guards in `src/proxy.ts` are convenience. **RLS decides what any request
 can actually read or write** — a hidden route is not a security boundary.
 
+### Why `(portal)` is a route group
+
+The authenticated portal pages live in `src/app/provider/(portal)/`, and its
+layout holds the auth guard. `/provider/login` sits *outside* that group.
+
+This matters: when the guard layout sat directly at `/provider`, it also wrapped
+`/provider/login`, so a signed-out visitor was redirected from the login page to
+the login page — an infinite loop. The proxy had the same flaw, since
+`pathname.startsWith("/provider")` matches `/provider/login` too.
+
+Route groups do not change URLs, so `/provider`, `/provider/archive` and the
+rest are unaffected.
+
+**If you add a page a signed-out person needs, put it outside `(portal)` and add
+it to `PUBLIC_PREFIXES` in `src/lib/routes.ts`.** `npm test` covers this.
+
 ## Structure
 
 ```
@@ -75,6 +92,7 @@ src/
 │   ├── supabase/             browser, server and proxy clients
 │   ├── queries.ts            TanStack Query hooks + realtime
 │   ├── rpc.ts                typed RPC wrappers
+│   ├── routes.ts             public paths, guards, safe redirect targets
 │   ├── errors.ts             code -> sentence
 │   └── database.types.ts     regenerate from the backend, do not hand-edit
 └── proxy.ts                  session refresh + route guards
