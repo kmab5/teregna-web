@@ -19,6 +19,14 @@ export interface RequestItemSnapshot {
   quantity: number;
 }
 
+/** Return of delete_my_account(). */
+export interface AccountDeletionResult {
+  cancelled_requests: number;
+  orphaned_providers: number;
+  /** False if the auth row survived; personal data is scrubbed either way. */
+  auth_user_deleted: boolean;
+}
+
 export interface Profile {
   id: string;
   display_name: string;
@@ -54,6 +62,11 @@ export interface Item {
   image_url: string | null;
   is_visible: boolean;
   display_order: number;
+  /**
+   * Typical minutes to complete. Optional. Collected now; reserved for
+   * estimated wait times.
+   */
+  duration_minutes: number | null;
   created_at: string;
   updated_at: string;
 }

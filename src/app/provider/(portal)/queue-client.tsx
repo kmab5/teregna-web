@@ -1,11 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CheckCheck } from "lucide-react";
-import { useMyProvider, useProviderQueue } from "@/lib/queries";
+import { useMyProvider, useProviderItems, useProviderQueue, useProfile } from "@/lib/queries";
+import { SetupChecklist, setupSteps } from "@/components/teregna/setup-checklist";
+import { useNow } from "@/lib/use-now";
 import { finishRequest, startRequest } from "@/lib/rpc";
 import { errorMessage, isRace } from "@/lib/errors";
 import { qk } from "@/lib/query-keys";
@@ -15,15 +15,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { QueueRow as QueueRowData } from "@/lib/database.types";
 
 export function QueueClient() {
-  const router = useRouter();
   const qc = useQueryClient();
   const { data: provider, isPending: providerPending } = useMyProvider();
   const { data: queue, isPending } = useProviderQueue(provider?.id);
-
-  // No provider yet means onboarding, not an error screen.
-  useEffect(() => {
-    if (!providerPending && provider === null) router.replace("/provider/onboarding");
-  }, [provider, providerPending, router]);
+  const { data: items } = useProviderItems(provider?.id ?? "");
+  const { data: profile } = useProfile();
+  // One clock for the whole list, so every wait time ticks in step.
+  const now = useNow();
 
   const key = qk.queue(provider?.id ?? "");
 
@@ -76,9 +74,12 @@ export function QueueClient() {
   }
 
   const rows = queue ?? [];
+  const steps = setupSteps(provider ?? null, items ?? [], profile ?? null);
 
   return (
     <>
+      <SetupChecklist steps={steps} />
+
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl font-semibold">Queue</h1>
@@ -109,6 +110,7 @@ export function QueueClient() {
             <QueueRow
               key={row.id}
               row={row}
+              now={now}
               onStart={(id) => start.mutate(id)}
               onFinish={(id) => finish.mutate(id)}
               pending={

@@ -113,9 +113,12 @@ export function ItemsClient() {
                 ) : null}
               </div>
 
-              <span className="font-mono tnum text-sm text-ink-muted">
-                {formatBirr(item.price, item.currency)}
-              </span>
+              <div className="flex shrink-0 items-center gap-3 font-mono tnum text-sm text-ink-muted">
+                {item.duration_minutes ? (
+                  <span title="Typical minutes">{item.duration_minutes}m</span>
+                ) : null}
+                <span>{formatBirr(item.price, item.currency)}</span>
+              </div>
 
               <div className="flex items-center gap-2">
                 <Switch
@@ -170,6 +173,7 @@ function ItemSheet({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [duration, setDuration] = useState("");
 
   // Reset the form whenever the sheet opens on a different item.
   const [lastId, setLastId] = useState<string | null>(null);
@@ -179,6 +183,7 @@ function ItemSheet({
     setName(item?.name ?? "");
     setDescription(item?.description ?? "");
     setPrice(item?.price != null ? String(item.price) : "");
+    setDuration(item?.duration_minutes != null ? String(item.duration_minutes) : "");
   }
 
   const save = useMutation({
@@ -188,6 +193,7 @@ function ItemSheet({
         name: name.trim(),
         description: description.trim() || null,
         price: price ? Number(price) : null,
+        duration_minutes: duration ? Number(duration) : null,
       }),
     onSuccess: () => {
       onSaved();
@@ -222,6 +228,24 @@ function ItemSheet({
               placeholder="150"
               className="font-mono"
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="item-duration">
+              Typical minutes
+              <span className="ml-2 font-normal text-ink-muted">optional</span>
+            </Label>
+            <Input
+              id="item-duration"
+              type="number"
+              min={1}
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              placeholder="30"
+              className="font-mono"
+            />
+            <p className="text-xs text-ink-muted">
+              Not shown to customers yet. Will be used to estimate waiting times.
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="item-desc">Description</Label>

@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useMyProvider } from "@/lib/queries";
-import { setProviderActive, upsertProvider } from "@/lib/rpc";
+import { useMyProvider, useProfile } from "@/lib/queries";
+import { setProviderActive, upsertProfile, upsertProvider } from "@/lib/rpc";
 import { errorMessage } from "@/lib/errors";
 import { qk } from "@/lib/query-keys";
 import { Button } from "@/components/ui/button";
@@ -13,14 +13,19 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DeleteAccount } from "@/components/teregna/delete-account";
 
 export function SettingsClient() {
   const qc = useQueryClient();
   const { data: provider, isPending } = useMyProvider();
+  const { data: profile } = useProfile();
 
   const [name, setName] = useState<string | null>(null);
   const [description, setDescription] = useState<string | null>(null);
   const [location, setLocation] = useState<string | null>(null);
+  const [category, setCategory] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
+  const [phone, setPhone] = useState<string | null>(null);
 
   const active = useMutation({
     mutationFn: (value: boolean) => setProviderActive(provider!.id, value),
@@ -35,6 +40,19 @@ export function SettingsClient() {
     onError: (e) => toast.error(errorMessage(e)),
   });
 
+  const saveProfile = useMutation({
+    mutationFn: () =>
+      upsertProfile({
+        display_name: (displayName ?? profile?.display_name ?? "").trim(),
+        phone: (phone ?? profile?.phone ?? "").trim(),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: qk.profile() });
+      toast.success("Saved");
+    },
+    onError: (e) => toast.error(errorMessage(e)),
+  });
+
   const save = useMutation({
     mutationFn: () =>
       upsertProvider({
@@ -42,6 +60,7 @@ export function SettingsClient() {
         name: (name ?? provider!.name).trim(),
         description: description ?? provider!.description,
         location: location ?? provider!.location,
+        category: category ?? provider!.category,
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.myProvider() });
@@ -113,6 +132,15 @@ export function SettingsClient() {
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="p-category">Category</Label>
+              <Input
+                id="p-category"
+                value={category ?? provider.category ?? ""}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="barber"
+              />
+            </div>
             <Button onClick={() => save.mutate()} disabled={save.isPending}>
               {save.isPending ? "Saving…" : "Save changes"}
             </Button>
@@ -121,12 +149,55 @@ export function SettingsClient() {
 
         <Card>
           <CardHeader>
+            <CardTitle>Your details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="u-name">Your name</Label>
+              <Input
+                id="u-name"
+                value={displayName ?? profile?.display_name ?? ""}
+                onChange={(e) => setDisplayName(e.target.value)}
+                autoComplete="name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="u-phone">Phone number</Label>
+              <Input
+                id="u-phone"
+                type="tel"
+                inputMode="tel"
+                value={phone ?? profile?.phone ?? ""}
+                onChange={(e) => setPhone(e.target.value)}
+                autoComplete="tel"
+                className="font-mono"
+              />
+              <p className="text-xs text-ink-muted">
+                Never shown publicly.
+              </p>
+            </div>
+            <Button onClick={() => saveProfile.mutate()} disabled={saveProfile.isPending}>
+              {saveProfile.isPending ? "Saving…" : "Save details"}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle>Account</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <form action="/auth/signout" method="post">
               <Button type="submit" variant="outline">Sign out</Button>
             </form>
+
+            <div className="border-t border-border pt-4">
+              <p className="mb-3 text-sm text-ink-muted">
+                Deleting your account closes your business and cancels anyone
+                waiting. It cannot be undone.
+              </p>
+              <DeleteAccount isProvider />
+            </div>
           </CardContent>
         </Card>
       </div>

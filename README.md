@@ -25,8 +25,19 @@ and anon key to paste in.
 |---------|------|
 | `npm run dev` | Dev server |
 | `npm test` | Route-guard regression tests |
-| `npm run verify` | Typecheck + lint + test + build. Run before pushing |
+| `npm run verify` | Lint + test + build. Run before pushing |
+| `npm run typecheck` | Standalone `tsc`. See the note below |
 | `npm run build` | Production build |
+
+### A note on `npm run typecheck`
+
+`next build` regenerates `.next/types/validator.ts` from the current route tree
+and then type-checks it, so `npm run verify` is always accurate.
+
+A standalone `tsc --noEmit` checks whatever `.next/types` was left behind by the
+*last* build. Add, move or delete a route and it will report phantom
+`Cannot find module '.../page.js'` errors until you rebuild. If that happens,
+delete `.next` and re-run — it is a stale artifact, not a real error.
 
 ## Stack
 

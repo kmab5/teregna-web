@@ -9,6 +9,8 @@ import { cancelRequest } from "@/lib/rpc";
 import { errorMessage, isRace } from "@/lib/errors";
 import { qk } from "@/lib/query-keys";
 import { RequestStatusBadge } from "@/components/teregna/request-status-badge";
+import { WaitTime } from "@/components/teregna/wait-time";
+import { useNow } from "@/lib/use-now";
 import { EmptyState } from "@/components/teregna/empty-state";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,6 +20,7 @@ import { ACTIVE_STATUSES, type MyRequest } from "@/lib/database.types";
 export function MyRequestsClient({ userId }: { userId: string | undefined }) {
   const qc = useQueryClient();
   const { data, isPending } = useMyRequests(userId);
+  const now = useNow();
 
   const cancel = useMutation({
     mutationFn: (id: string) => cancelRequest(id),
@@ -75,6 +78,7 @@ export function MyRequestsClient({ userId }: { userId: string | undefined }) {
               <RequestCard
                 key={r.id}
                 request={r}
+                now={now}
                 onCancel={() => cancel.mutate(r.id)}
                 pending={cancel.isPending && cancel.variables === r.id}
               />
@@ -90,7 +94,7 @@ export function MyRequestsClient({ userId }: { userId: string | undefined }) {
           </h2>
           <ul className="space-y-3">
             {past.map((r) => (
-              <RequestCard key={r.id} request={r} />
+              <RequestCard key={r.id} request={r} now={now} />
             ))}
           </ul>
         </section>
@@ -101,10 +105,12 @@ export function MyRequestsClient({ userId }: { userId: string | undefined }) {
 
 function RequestCard({
   request,
+  now,
   onCancel,
   pending,
 }: {
   request: MyRequest;
+  now: number;
   onCancel?: () => void;
   pending?: boolean;
 }) {
@@ -134,9 +140,13 @@ function RequestCard({
 
         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
           <RequestStatusBadge status={request.status} />
-          <span className="font-mono tnum text-xs text-ink-muted">
-            {formatDateTime(request.created_at)}
-          </span>
+          {isActive ? (
+            <WaitTime since={request.created_at} now={now} />
+          ) : (
+            <span className="font-mono tnum text-xs text-ink-muted">
+              {formatDateTime(request.created_at)}
+            </span>
+          )}
         </div>
 
         {request.items.length > 0 ? (

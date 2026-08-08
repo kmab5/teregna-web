@@ -1,7 +1,13 @@
 "use client";
 
 import { getClient } from "./supabase/client";
-import type { Analytics, Item, Provider, Profile } from "./database.types";
+import type {
+  AccountDeletionResult,
+  Analytics,
+  Item,
+  Profile,
+  Provider,
+} from "./database.types";
 
 /**
  * Typed wrappers over the RPC surface.
@@ -81,6 +87,14 @@ export const deleteItem = (itemId: string) =>
 
 export const upsertProfile = (p: Partial<Profile>) =>
   rpc<Profile>("upsert_profile", { p });
+
+/**
+ * Irreversible. Cancels anything live, drops businesses that never served
+ * anyone, orphans the rest so receivers keep their own history, scrubs the
+ * profile, and removes the login.
+ */
+export const deleteMyAccount = () =>
+  rpc<AccountDeletionResult>("delete_my_account");
 
 /* ---------------------------------------------------------- analytics ---- */
 

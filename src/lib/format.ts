@@ -68,3 +68,31 @@ export function initials(name: string): string {
     .map((p) => p[0]?.toUpperCase() ?? "")
     .join("");
 }
+
+/**
+ * Elapsed wait, split so a UI can style the number differently from its unit.
+ * Returns whole minutes below an hour, then hours and minutes.
+ */
+export function elapsed(
+  since: string,
+  now: number = Date.now(),
+): { value: string; unit: string; minutes: number } {
+  const mins = Math.max(0, Math.floor((now - new Date(since).getTime()) / 60000));
+  if (mins < 60) return { value: String(mins), unit: mins === 1 ? "min" : "mins", minutes: mins };
+  const hrs = Math.floor(mins / 60);
+  const rem = mins % 60;
+  return {
+    value: rem ? `${hrs}:${String(rem).padStart(2, "0")}` : String(hrs),
+    unit: rem ? "hrs" : hrs === 1 ? "hr" : "hrs",
+    minutes: mins,
+  };
+}
+
+/** Sum of known service durations on a request. Null when nothing is known. */
+export function knownDuration(
+  items: { quantity: number; duration_minutes?: number | null }[],
+): number | null {
+  const known = items.filter((i) => i.duration_minutes);
+  if (known.length === 0) return null;
+  return known.reduce((s, i) => s + (i.duration_minutes ?? 0) * i.quantity, 0);
+}

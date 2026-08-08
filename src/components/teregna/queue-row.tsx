@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Play, Check, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RequestStatusBadge } from "./request-status-badge";
-import { formatBirr, waitingSince } from "@/lib/format";
+import { WaitTime } from "./wait-time";
+import { formatBirr } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { QueueRow as QueueRowData } from "@/lib/database.types";
 
@@ -20,19 +20,15 @@ export function QueueRow({
   onStart,
   onFinish,
   pending,
+  now,
 }: {
   row: QueueRowData;
   onStart: (id: string) => void;
   onFinish: (id: string) => void;
   pending?: boolean;
+  /** Ticking clock from the parent, so every row re-renders together. */
+  now: number;
 }) {
-  // The wait time is the one number that must never look frozen.
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 30_000);
-    return () => clearInterval(t);
-  }, []);
-
   const active = row.status === "in_progress";
 
   return (
@@ -60,9 +56,6 @@ export function QueueRow({
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <p className="font-medium">{row.receiver_name}</p>
           <RequestStatusBadge status={row.status} />
-          <span className="font-mono tnum text-xs text-ink-muted">
-            waiting {waitingSince(row.created_at, now)}
-          </span>
         </div>
 
         {row.items.length > 0 ? (
@@ -94,27 +87,31 @@ export function QueueRow({
         ) : null}
       </div>
 
-      <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-        {row.status === "queued" ? (
+      <div className="flex shrink-0 flex-col items-end gap-3">
+        <WaitTime since={row.created_at} now={now} size="lg" />
+
+        <div className="flex gap-2">
+          {row.status === "queued" ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onStart(row.id)}
+              disabled={pending}
+            >
+              <Play aria-hidden />
+              Start
+            </Button>
+          ) : null}
           <Button
-            variant="outline"
+            variant="accent"
             size="sm"
-            onClick={() => onStart(row.id)}
+            onClick={() => onFinish(row.id)}
             disabled={pending}
           >
-            <Play aria-hidden />
-            Start
+            <Check aria-hidden />
+            Finish
           </Button>
-        ) : null}
-        <Button
-          variant="accent"
-          size="sm"
-          onClick={() => onFinish(row.id)}
-          disabled={pending}
-        >
-          <Check aria-hidden />
-          Finish
-        </Button>
+        </div>
       </div>
     </li>
   );

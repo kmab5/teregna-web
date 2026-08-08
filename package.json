@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run typecheck && npm run lint && npm test && npm run build",
+    "verify": "npm run lint && npm test && npm run build",
     "test": "node --experimental-strip-types tests/routes.test.mts"
   },
   "dependencies": {

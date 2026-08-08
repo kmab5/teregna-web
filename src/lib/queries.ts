@@ -3,6 +3,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { getClient } from "./supabase/client";
+import { subscribeToRequests } from "./realtime";
 import { qk } from "./query-keys";
 import * as rpc from "./rpc";
 import type {
@@ -96,27 +97,31 @@ export function useProviderQueue(providerId: string | undefined) {
     },
     // A stale queue is worse than a slow one.
     refetchOnWindowFocus: true,
+    // Safety net. Realtime is the fast path, but it depends on the socket
+    // staying authenticated and the table staying in the publication - both
+    // outside this app's control. A quiet poll means the worst case is a few
+    // seconds late rather than silently frozen.
+    refetchInterval: 15_000,
+    refetchIntervalInBackground: false,
   });
 
   useEffect(() => {
     if (!providerId) return;
     const client = getClient();
-    const channel = client
-      .channel(`queue:${providerId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "requests",
-          filter: `provider_id=eq.${providerId}`,
-        },
-        () => {
-          qc.invalidateQueries({ queryKey: qk.queue(providerId) });
-          qc.invalidateQueries({ queryKey: qk.archive(providerId) });
-        },
-      )
-      .subscribe();
+    let channel: Awaited<ReturnType<typeof subscribeToRequests>> = null;
+    let cancelled = false;
+
+    subscribeToRequests({
+      name: `queue:${providerId}`,
+      filter: `provider_id=eq.${providerId}`,
+      onChange: () => {
+        qc.invalidateQueries({ queryKey: qk.queue(providerId) });
+        qc.invalidateQueries({ queryKey: qk.archive(providerId) });
+      },
+    }).then((ch) => {
+      if (cancelled && ch) client.removeChannel(ch);
+      else channel = ch;
+    });
 
     // Liveness is not truth: on reconnect, re-read before trusting the socket.
     const onOnline = () =>
@@ -124,8 +129,9 @@ export function useProviderQueue(providerId: string | undefined) {
     window.addEventListener("online", onOnline);
 
     return () => {
+      cancelled = true;
       window.removeEventListener("online", onOnline);
-      client.removeChannel(channel);
+      if (channel) client.removeChannel(channel);
     };
   }, [providerId, qc]);
 
@@ -163,31 +169,33 @@ export function useMyRequests(userId: string | undefined) {
       return (data ?? []) as MyRequest[];
     },
     refetchOnWindowFocus: true,
+    // See the note in useProviderQueue.
+    refetchInterval: 20_000,
+    refetchIntervalInBackground: false,
   });
 
   useEffect(() => {
     if (!userId) return;
     const client = getClient();
-    const channel = client
-      .channel(`my-requests:${userId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "requests",
-          filter: `receiver_id=eq.${userId}`,
-        },
-        () => qc.invalidateQueries({ queryKey: qk.myRequests() }),
-      )
-      .subscribe();
+    let channel: Awaited<ReturnType<typeof subscribeToRequests>> = null;
+    let cancelled = false;
+
+    subscribeToRequests({
+      name: `my-requests:${userId}`,
+      filter: `receiver_id=eq.${userId}`,
+      onChange: () => qc.invalidateQueries({ queryKey: qk.myRequests() }),
+    }).then((ch) => {
+      if (cancelled && ch) client.removeChannel(ch);
+      else channel = ch;
+    });
 
     const onOnline = () => qc.invalidateQueries({ queryKey: qk.myRequests() });
     window.addEventListener("online", onOnline);
 
     return () => {
+      cancelled = true;
       window.removeEventListener("online", onOnline);
-      client.removeChannel(channel);
+      if (channel) client.removeChannel(channel);
     };
   }, [userId, qc]);
 

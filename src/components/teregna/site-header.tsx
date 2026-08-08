@@ -13,7 +13,12 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
 
   const links = [
     { href: "/browse", label: "Browse" },
-    ...(signedIn ? [{ href: "/requests", label: "My requests" }] : []),
+    ...(signedIn
+      ? [
+          { href: "/requests", label: "My requests" },
+          { href: "/account", label: "Account" },
+        ]
+      : []),
   ];
 
   return (
@@ -64,7 +69,7 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
 
           {signedIn ? (
             <Button asChild variant="outline" size="sm">
-              <Link href="/provider">Provider</Link>
+              <Link href="/provider">Business dashboard</Link>
             </Button>
           ) : (
             <>
