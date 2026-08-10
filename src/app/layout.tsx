@@ -55,6 +55,11 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  // Required for env(safe-area-inset-*) to resolve. Without it the bottom nav
+  // sits under the iOS home indicator.
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#FAF7FF" },
     { media: "(prefers-color-scheme: dark)", color: "#141024" },

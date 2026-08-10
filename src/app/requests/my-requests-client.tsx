@@ -117,7 +117,7 @@ function RequestCard({
   const isActive = ACTIVE_STATUSES.includes(request.status);
 
   return (
-    <li className="flex items-start gap-4 rounded-[var(--radius-md)] border border-border bg-surface p-4 elev-1">
+    <li className="flex items-start gap-3 rounded-[var(--radius-md)] border border-border bg-surface p-3 elev-1 sm:gap-4 sm:p-4">
       {/* Position is the answer to the only question the receiver has. */}
       {isActive && request.position ? (
         <div className="flex shrink-0 flex-col items-center">
@@ -179,7 +179,7 @@ function RequestCard({
           className="shrink-0"
         >
           <X aria-hidden />
-          Cancel
+          <span className="hidden sm:inline">Cancel</span>
         </Button>
       ) : null}
     </li>

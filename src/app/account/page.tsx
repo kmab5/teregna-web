@@ -12,7 +12,7 @@ export default async function AccountPage() {
   return (
     <>
       <SiteHeader signedIn />
-      <main id="main" className="mx-auto max-w-2xl px-4 py-10">
+      <main id="main" className="mx-auto max-w-2xl px-4 py-6 pb-24 md:py-10 md:pb-10">
         <h1 className="font-display text-2xl font-semibold">Your account</h1>
         <AccountClient email={user.email ?? ""} />
       </main>

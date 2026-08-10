@@ -34,12 +34,14 @@ export function QueueRow({
   return (
     <li
       className={cn(
-        "animate-queue-enter relative flex items-start gap-4 rounded-[var(--radius-md)] border bg-surface p-4 pl-3 elev-1 transition-opacity",
+        "animate-queue-enter relative rounded-[var(--radius-md)] border bg-surface p-3 elev-1 transition-opacity sm:p-4 sm:pl-3",
+        "flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4",
         active ? "border-primary/50" : "border-border",
         pending && "opacity-50",
       )}
     >
       {/* Position marker, seated on the rail */}
+      <div className="flex items-start gap-3 sm:contents">
       <div
         className={cn(
           "z-10 flex size-10 shrink-0 items-center justify-center rounded-full border-2 font-mono tnum text-base font-semibold",
@@ -87,16 +89,30 @@ export function QueueRow({
         ) : null}
       </div>
 
-      <div className="flex shrink-0 flex-col items-end gap-3">
-        <WaitTime since={row.created_at} now={now} size="lg" />
+      <WaitTime
+        since={row.created_at}
+        now={now}
+        size="lg"
+        className="ml-auto sm:hidden"
+      />
+      </div>
 
-        <div className="flex gap-2">
+      <div className="flex shrink-0 items-end justify-between gap-3 sm:flex-col">
+        <WaitTime
+          since={row.created_at}
+          now={now}
+          size="lg"
+          className="hidden sm:flex"
+        />
+
+        <div className="flex flex-1 gap-2 sm:flex-none">
           {row.status === "queued" ? (
             <Button
               variant="outline"
               size="sm"
               onClick={() => onStart(row.id)}
               disabled={pending}
+              className="flex-1 sm:flex-none"
             >
               <Play aria-hidden />
               Start
@@ -107,6 +123,7 @@ export function QueueRow({
             size="sm"
             onClick={() => onFinish(row.id)}
             disabled={pending}
+            className="flex-1 sm:flex-none"
           >
             <Check aria-hidden />
             Finish

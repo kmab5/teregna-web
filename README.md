@@ -120,6 +120,34 @@ src/
 └── proxy.ts                  session refresh + route guards
 ```
 
+## Responsive behaviour
+
+Mobile-first, and tested down to **320px**.
+
+Navigation moves to a **bottom tab bar** below `md`. That is not only about
+finding room — laid out horizontally the receiver header needed ~600px in a
+343px space and the provider's five tabs needed ~435px. Shrinking them would
+have produced targets too small to hit. Bottom placement also matches how the
+app is used: a receiver checking their position and a provider finishing the
+next request are both one-handed, standing up, thumb near the bottom of the
+screen.
+
+| Breakpoint | Change |
+|---|---|
+| `< 360px` | Item sheet number fields stack |
+| `< 400px` | Wordmark drops, mark only |
+| `< 640px` (`sm`) | Rows stack: identity above, controls below. Action buttons go full-width |
+| `< 768px` (`md`) | Top nav replaced by bottom tab bar; provider tabs move there too |
+
+Other rules the code holds to:
+
+- `viewportFit: "cover"` plus `env(safe-area-inset-bottom)`, so the tab bar
+  clears the iOS home indicator rather than sitting under it.
+- Pages that show the tab bar reserve its height, so the last control is never
+  covered.
+- Long business names truncate rather than pushing the status pill off-screen.
+- Tab bar rows are 56px tall — past the 44px minimum target.
+
 ## Design
 
 Tokens live in `src/app/globals.css` and come from

@@ -39,7 +39,7 @@ export default async function ProviderPage({
     <>
       <SiteHeader signedIn={Boolean(user)} />
 
-      <main id="main" className="mx-auto max-w-3xl px-4 py-10">
+      <main id="main" className="mx-auto max-w-3xl px-4 py-6 md:py-10">
         <header className="border-b border-border pb-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -87,7 +87,7 @@ export default async function ProviderPage({
           </p>
         )}
 
-        <div className="sticky bottom-0 -mx-4 border-t border-border bg-bg/90 px-4 py-4 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:pb-10">
+        <div className="sticky bottom-14 -mx-4 border-t border-border bg-bg/95 px-4 py-4 backdrop-blur md:bottom-0 md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:pb-10">
           <SendRequestSheet
             providerId={provider.id}
             providerName={provider.name}

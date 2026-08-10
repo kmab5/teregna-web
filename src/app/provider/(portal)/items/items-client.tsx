@@ -112,7 +112,7 @@ export function ItemsClient() {
 
   return (
     <>
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-semibold">Items</h1>
           <p className="mt-1 text-ink-muted">
@@ -120,7 +120,7 @@ export function ItemsClient() {
             requested is affected.
           </p>
         </div>
-        <Button onClick={() => openEditor(null)}>
+        <Button onClick={() => openEditor(null)} className="w-full sm:w-auto">
           <Plus aria-hidden />
           Add item
         </Button>
@@ -147,10 +147,12 @@ export function ItemsClient() {
               <li
                 key={item.id}
                 className={cn(
-                  "flex flex-wrap items-center gap-3 rounded-[var(--radius-md)] border border-border bg-surface p-3 elev-1 sm:flex-nowrap",
+                  "rounded-[var(--radius-md)] border border-border bg-surface p-3 elev-1",
+                  "flex flex-col gap-3 sm:flex-row sm:items-center",
                   !item.is_visible && "opacity-70",
                 )}
               >
+                <div className="flex min-w-0 items-center gap-3">
                 {/* Order controls, first because they change what this row IS. */}
                 <div className="flex shrink-0 flex-col">
                   <button
@@ -191,7 +193,11 @@ export function ItemsClient() {
                     </span>
                   ) : null}
                 </button>
+                </div>
 
+                {/* Controls row. Wraps under the name on phones, sits inline
+                    from 640px up. */}
+                <div className="flex items-center gap-3 sm:shrink-0">
                 <div className="flex shrink-0 items-center gap-3 font-mono tnum text-sm text-ink-muted">
                   {item.duration_minutes ? (
                     <span title="Typical minutes">{item.duration_minutes}m</span>
@@ -199,7 +205,7 @@ export function ItemsClient() {
                   <span>{formatBirr(item.price, item.currency)}</span>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-1.5">
+                <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:ml-0">
                   <Switch
                     checked={item.is_visible}
                     onCheckedChange={(v) =>
@@ -233,6 +239,7 @@ export function ItemsClient() {
                   >
                     <Trash2 className="size-4" aria-hidden />
                   </button>
+                </div>
                 </div>
               </li>
             ))}
@@ -351,7 +358,7 @@ function ItemSheet({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="item-price">Price (ETB)</Label>
               <Input

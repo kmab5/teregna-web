@@ -24,7 +24,7 @@ export default async function LandingPage() {
 
       <main id="main">
         {/* The hero is the thesis: a queue, counting down. */}
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
+        <section className="mx-auto max-w-6xl px-4 py-10 sm:py-24">
           <div className="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-center">
             <div>
               <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-sm text-ink-muted">
@@ -33,13 +33,13 @@ export default async function LandingPage() {
                 <span>— the one whose turn it is</span>
               </p>
 
-              <h1 className="font-display text-4xl font-semibold leading-[1.1] sm:text-5xl">
+              <h1 className="font-display text-3xl font-semibold leading-[1.1] sm:text-5xl">
                 Stop asking
                 <br />
                 <span className="text-primary">“am I next?”</span>
               </h1>
 
-              <p className="mt-5 text-lg text-ink-muted">
+              <p className="mt-4 text-base text-ink-muted sm:mt-5 sm:text-lg">
                 Find a barber, a tailor, a clinic. Send a request and take your
                 place in their queue. Watch your position move without standing
                 in a line or calling ahead.
@@ -58,7 +58,7 @@ export default async function LandingPage() {
             </div>
 
             {/* Signature: the rail. Position numbers as a literal column. */}
-            <div className="queue-rail relative space-y-3 rounded-[var(--radius-lg)] border border-border bg-surface p-6 elev-2">
+            <div className="queue-rail relative space-y-3 rounded-[var(--radius-lg)] border border-border bg-surface p-4 elev-2 sm:p-6">
               <p className="mb-4 text-xs font-medium uppercase tracking-wide text-ink-muted">
                 Abebe Barbershop · live
               </p>
@@ -93,7 +93,7 @@ export default async function LandingPage() {
         </section>
 
         {featured.length > 0 ? (
-          <section className="mx-auto max-w-6xl px-4 pb-20">
+          <section className="mx-auto max-w-6xl px-4 pb-16 sm:pb-20">
             <div className="mb-5 flex items-end justify-between">
               <h2 className="font-display text-xl font-semibold">Open now</h2>
               <Link

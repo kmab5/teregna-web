@@ -16,7 +16,7 @@ export function ArchiveRow({
   pending?: boolean;
 }) {
   return (
-    <li className="flex items-start gap-4 rounded-[var(--radius-md)] border border-border bg-surface p-4 elev-1">
+    <li className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-border bg-surface p-3 elev-1 sm:flex-row sm:items-start sm:gap-4 sm:p-4">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <p className="font-medium">{row.receiver_name}</p>
@@ -53,7 +53,7 @@ export function ArchiveRow({
         size="sm"
         onClick={() => onRestore(row.id)}
         disabled={pending}
-        className="shrink-0"
+        className="w-full shrink-0 sm:w-auto"
       >
         <RotateCcw aria-hidden />
         Restore

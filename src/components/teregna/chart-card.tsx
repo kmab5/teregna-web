@@ -149,7 +149,7 @@ export function ChartCard({
                       dataKey="label"
                       stroke="var(--ink-muted)"
                       fontSize={12}
-                      width={110}
+                      width={84}
                       tickLine={false}
                     />
                   </>

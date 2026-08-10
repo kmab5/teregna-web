@@ -80,7 +80,7 @@ export function QueueClient() {
     <>
       <SetupChecklist steps={steps} />
 
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <header className="mb-6 flex items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl font-semibold">Queue</h1>
           <p className="mt-1 text-ink-muted">

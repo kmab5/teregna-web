@@ -21,7 +21,7 @@ export function AnalyticsClient() {
 
   return (
     <>
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-semibold">Analytics</h1>
           <p className="mt-1 text-ink-muted">How the queue has been moving.</p>
