@@ -150,7 +150,7 @@ export function ItemsClient() {
                 key={item.id}
                 className={cn(
                   "rounded-[var(--radius-md)] border border-border bg-surface p-3 elev-1",
-                  "flex flex-col gap-3 sm:flex-row sm:items-center",
+                  "flex flex-col gap-3 justify-between sm:flex-row sm:items-center",
                   !item.is_visible && "opacity-70",
                 )}
               >
