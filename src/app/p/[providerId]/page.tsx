@@ -4,8 +4,8 @@ import { SiteHeader } from "@/components/teregna/site-header";
 import { SendRequestSheet } from "@/components/teregna/send-request-sheet";
 import { ItemRow } from "@/components/teregna/item-row";
 import { createClient, getUser } from "@/lib/supabase/server";
-import { queueLabel } from "@/lib/format";
-import type { Item, ProviderPublic } from "@/lib/database.types";
+import { getT } from "@/i18n/server";
+import type { ItemView, ProviderPublic } from "@/lib/database.types";
 
 /**
  * Server-rendered so it is fast on a mid-range phone and shareable as a link.
@@ -20,11 +20,12 @@ export default async function ProviderPage({
   const { providerId } = await params;
   const supabase = await createClient();
   const user = await getUser();
+  const t = await getT();
 
   const [{ data: providerData }, { data: itemsData }] = await Promise.all([
     supabase.from("provider_public").select("*").eq("id", providerId).maybeSingle(),
     supabase
-      .from("items")
+      .from("items_view")
       .select("*")
       .eq("provider_id", providerId)
       .order("display_order"),
@@ -33,7 +34,7 @@ export default async function ProviderPage({
   const provider = providerData as ProviderPublic | null;
   if (!provider) notFound();
 
-  const items = (itemsData ?? []) as Item[];
+  const items = (itemsData ?? []) as ItemView[];
 
   return (
     <>
@@ -62,7 +63,7 @@ export default async function ProviderPage({
             {/* A count, never who is in it. */}
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
               <Users className="size-4" aria-hidden />
-              <span className="font-mono tnum">{queueLabel(provider.queue_length)}</span>
+              <span className="font-mono tnum">{provider.queue_length === 0 ? t("queue.none") : t.plural("queue.waiting", provider.queue_length)}</span>
             </span>
           </div>
 
@@ -73,7 +74,7 @@ export default async function ProviderPage({
 
         {items.length > 0 ? (
           <section className="py-6">
-            <h2 className="font-display text-xl font-semibold">What they offer</h2>
+            <h2 className="font-display text-xl font-semibold">{t("prov.offers")}</h2>
             <div className="mt-4 space-y-2">
               {items.map((item) => (
                 <ItemRow key={item.id} item={item} />
@@ -82,8 +83,7 @@ export default async function ProviderPage({
           </section>
         ) : (
           <p className="py-6 text-ink-muted">
-            This provider has not listed anything yet. You can still send a
-            request with a note.
+            {t("prov.noItems")}
           </p>
         )}
 

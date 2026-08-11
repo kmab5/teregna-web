@@ -16,8 +16,8 @@ export default async function Page({
     <AuthForm
       mode="signin"
       audience="provider"
-      title="Provider sign in"
-      subtitle="Open your queue, manage what you offer, and see how the week went."
+      titleKey="auth.provTitle"
+      subtitleKey="auth.provTitle"
       nextParam={next}
       errorParam={error}
     />

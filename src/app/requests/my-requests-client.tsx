@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { Inbox, X } from "lucide-react";
 import { useMyRequests } from "@/lib/queries";
 import { cancelRequest } from "@/lib/rpc";
-import { errorMessage, isRace } from "@/lib/errors";
+import { useT } from "@/i18n/client";
+import { errorKey, isRace } from "@/lib/errors";
 import { qk } from "@/lib/query-keys";
 import { RequestStatusBadge } from "@/components/teregna/request-status-badge";
 import { WaitTime } from "@/components/teregna/wait-time";
@@ -14,10 +15,11 @@ import { useNow } from "@/lib/use-now";
 import { EmptyState } from "@/components/teregna/empty-state";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatDateTime } from "@/lib/format";
+import { useLocaleFormat } from "@/lib/use-locale-format";
 import { ACTIVE_STATUSES, type MyRequest } from "@/lib/database.types";
 
 export function MyRequestsClient({ userId }: { userId: string | undefined }) {
+  const t = useT();
   const qc = useQueryClient();
   const { data, isPending } = useMyRequests(userId);
   const now = useNow();
@@ -26,12 +28,12 @@ export function MyRequestsClient({ userId }: { userId: string | undefined }) {
     mutationFn: (id: string) => cancelRequest(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.myRequests() });
-      toast.success("Request cancelled");
+      toast.success(t("req.cancelled"));
     },
     onError: (error) => {
       // A race is the normal outcome of two people acting at once, not a bug.
       if (isRace(error)) qc.invalidateQueries({ queryKey: qk.myRequests() });
-      toast.error(errorMessage(error));
+      toast.error(t(errorKey(error) as never));
     },
   });
 
@@ -54,11 +56,11 @@ export function MyRequestsClient({ userId }: { userId: string | undefined }) {
       <div className="mt-8">
         <EmptyState
           icon={Inbox}
-          title="You are not in any queues"
-          body="Find a provider and send a request. Your place will show up here."
+          title={t("req.emptyTitle")}
+          body={t("req.emptyBody")}
           action={
             <Button asChild>
-              <Link href="/browse">Find a provider</Link>
+              <Link href="/browse">{t("landing.ctaFind")}</Link>
             </Button>
           }
         />
@@ -71,7 +73,7 @@ export function MyRequestsClient({ userId }: { userId: string | undefined }) {
       {active.length > 0 ? (
         <section>
           <h2 className="mb-3 text-xs font-medium uppercase tracking-wide text-ink-muted">
-            Waiting now
+            {t("req.waitingNow")}
           </h2>
           <ul className="space-y-3">
             {active.map((r) => (
@@ -90,7 +92,7 @@ export function MyRequestsClient({ userId }: { userId: string | undefined }) {
       {past.length > 0 ? (
         <section>
           <h2 className="mb-3 text-xs font-medium uppercase tracking-wide text-ink-muted">
-            Earlier
+            {t("req.earlier")}
           </h2>
           <ul className="space-y-3">
             {past.map((r) => (
@@ -114,6 +116,8 @@ function RequestCard({
   onCancel?: () => void;
   pending?: boolean;
 }) {
+  const t = useT();
+  const { dateTime } = useLocaleFormat();
   const isActive = ACTIVE_STATUSES.includes(request.status);
 
   return (
@@ -125,7 +129,7 @@ function RequestCard({
             {request.position}
           </span>
           <span className="mt-1 text-[0.65rem] uppercase tracking-wide text-ink-muted">
-            in line
+            {t("req.inLine")}
           </span>
         </div>
       ) : null}
@@ -144,7 +148,7 @@ function RequestCard({
             <WaitTime since={request.created_at} now={now} />
           ) : (
             <span className="font-mono tnum text-xs text-ink-muted">
-              {formatDateTime(request.created_at)}
+              {dateTime(request.created_at)}
             </span>
           )}
         </div>
@@ -179,7 +183,7 @@ function RequestCard({
           className="shrink-0"
         >
           <X aria-hidden />
-          <span className="hidden sm:inline">Cancel</span>
+          <span className="hidden sm:inline">{t("common.cancel")}</span>
         </Button>
       ) : null}
     </li>

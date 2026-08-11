@@ -80,3 +80,58 @@ check("off-site destinations are refused (open redirect)", () => {
 });
 
 console.log(`\n  ${pass} checks passed`);
+
+// --- i18n catalogue parity -------------------------------------------------
+// TypeScript already enforces this at build time (am.ts is typed as Messages),
+// but an explicit check names the offending key instead of emitting a wall of
+// type errors, and catches placeholder drift that types cannot see.
+import { en } from "../src/i18n/messages/en.ts";
+import { am } from "../src/i18n/messages/am.ts";
+
+const enKeys = Object.keys(en);
+const amKeys = Object.keys(am);
+
+check("every English key has an Amharic translation", () => {
+  const missing = enKeys.filter((k) => !(k in am));
+  assert.deepEqual(missing, [], `missing in am: ${missing.join(", ")}`);
+});
+
+check("no orphaned Amharic keys", () => {
+  const extra = amKeys.filter((k) => !(k in en));
+  assert.deepEqual(extra, [], `not in en: ${extra.join(", ")}`);
+});
+
+check("no Amharic value is left as English", () => {
+  const untranslated = enKeys.filter(
+    (k) =>
+      (am as Record<string, string>)[k] === (en as Record<string, string>)[k] &&
+      // Proper nouns and codes legitimately match.
+      !["app.name", "auth.email"].includes(k),
+  );
+  assert.deepEqual(untranslated, [], `identical to English: ${untranslated.join(", ")}`);
+});
+
+check("placeholders match between locales", () => {
+  const drift: string[] = [];
+  for (const k of enKeys) {
+    const ph = (s: string) => (s.match(/\{(\w+)\}/g) ?? []).sort().join(",");
+    const a = ph((en as Record<string, string>)[k]);
+    const b = ph((am as Record<string, string>)[k]);
+    if (a !== b) drift.push(`${k} (en:${a || "none"} vs am:${b || "none"})`);
+  }
+  assert.deepEqual(drift, [], `placeholder drift: ${drift.join("; ")}`);
+});
+
+check("every plural key has both .one and .other", () => {
+  const bases = new Set(
+    enKeys.filter((k) => k.endsWith(".one")).map((k) => k.slice(0, -4)),
+  );
+  const broken: string[] = [];
+  for (const b of bases) {
+    for (const cat of ["one", "other"]) {
+      if (!(`${b}.${cat}` in en)) broken.push(`en ${b}.${cat}`);
+      if (!(`${b}.${cat}` in am)) broken.push(`am ${b}.${cat}`);
+    }
+  }
+  assert.deepEqual(broken, [], `incomplete plurals: ${broken.join(", ")}`);
+});

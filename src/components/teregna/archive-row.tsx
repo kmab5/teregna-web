@@ -3,7 +3,8 @@
 import { RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RequestStatusBadge } from "./request-status-badge";
-import { formatDateTime } from "@/lib/format";
+import { useT } from "@/i18n/client";
+import { useLocaleFormat } from "@/lib/use-locale-format";
 import type { ArchiveRow as ArchiveRowData } from "@/lib/database.types";
 
 export function ArchiveRow({
@@ -15,6 +16,8 @@ export function ArchiveRow({
   onRestore: (id: string) => void;
   pending?: boolean;
 }) {
+  const t = useT();
+  const { dateTime } = useLocaleFormat();
   return (
     <li className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-border bg-surface p-3 elev-1 sm:flex-row sm:items-start sm:gap-4 sm:p-4">
       <div className="min-w-0 flex-1">
@@ -22,7 +25,7 @@ export function ArchiveRow({
           <p className="font-medium">{row.receiver_name}</p>
           <RequestStatusBadge status={row.status} />
           <span className="font-mono tnum text-xs text-ink-muted">
-            {formatDateTime(row.archived_at)}
+            {dateTime(row.archived_at)}
           </span>
         </div>
 
@@ -56,7 +59,7 @@ export function ArchiveRow({
         className="w-full shrink-0 sm:w-auto"
       >
         <RotateCcw aria-hidden />
-        Restore
+        {t("arc.restore")}
       </Button>
     </li>
   );

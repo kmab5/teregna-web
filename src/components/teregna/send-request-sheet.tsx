@@ -4,17 +4,18 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Send } from "lucide-react";
+import { PackageX, Send } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ItemRow } from "./item-row";
 import { createRequest } from "@/lib/rpc";
-import { errorMessage } from "@/lib/errors";
+import { errorKey } from "@/lib/errors";
 import { qk } from "@/lib/query-keys";
-import { formatBirr } from "@/lib/format";
-import type { Item } from "@/lib/database.types";
+import { useT } from "@/i18n/client";
+import { useLocaleFormat } from "@/lib/use-locale-format";
+import type { ItemView } from "@/lib/database.types";
 
 const PENDING_KEY = "teregna:pending-request";
 
@@ -32,9 +33,11 @@ export function SendRequestSheet({
 }: {
   providerId: string;
   providerName: string;
-  items: Item[];
+  items: ItemView[];
   signedIn: boolean;
 }) {
+  const t = useT();
+  const { money } = useLocaleFormat();
   const router = useRouter();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -92,6 +95,19 @@ export function SendRequestSheet({
     [lines, items],
   );
 
+  /**
+   * Selected items the provider expects to run out of before this person's turn.
+   * Surfaced as a heads-up, not a barrier: stock is the provider's own estimate,
+   * people cancel, and providers restock.
+   */
+  const depleted = useMemo(
+    () =>
+      lines
+        .map((l) => items.find((i) => i.id === l.item_id))
+        .filter((i): i is ItemView => Boolean(i?.is_depleted)),
+    [lines, items],
+  );
+
   const mutation = useMutation({
     mutationFn: () =>
       createRequest({
@@ -107,13 +123,13 @@ export function SendRequestSheet({
       setSelected({});
       setNote("");
       setIdempotencyKey(crypto.randomUUID());
-      toast.success("You're in the queue", {
-        description: `${providerName} can see your request.`,
-        action: { label: "View", onClick: () => router.push("/requests") },
+      toast.success(t("send.queuedTitle"), {
+        description: t("send.queuedBody", { provider: providerName }),
+        action: { label: t("send.view"), onClick: () => router.push("/requests") },
       });
       router.push("/requests");
     },
-    onError: (error) => toast.error(errorMessage(error)),
+    onError: (error) => toast.error(t(errorKey(error) as never)),
   });
 
   function toggle(id: string) {
@@ -149,13 +165,13 @@ export function SendRequestSheet({
       </SheetTrigger>
 
       <SheetContent
-        title={`Request at ${providerName}`}
-        description="Pick what you need. Everything here is optional except sending."
+        title={t("send.title", { provider: providerName })}
+        description={t("send.subtitle")}
       >
         <div className="space-y-4">
           {items.length > 0 ? (
             <div className="space-y-2">
-              <Label>What do you need?</Label>
+              <Label>{t("send.what")}</Label>
               <div className="space-y-2">
                 {items.map((item) => (
                   <ItemRow
@@ -174,20 +190,38 @@ export function SendRequestSheet({
           ) : null}
 
           <div className="space-y-2">
-            <Label htmlFor="note">Anything they should know?</Label>
+            <Label htmlFor="note">{t("send.note")}</Label>
             <Textarea
               id="note"
               value={note}
               maxLength={500}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="In a bit of a hurry"
+              placeholder={t("send.notePlaceholder")}
             />
           </div>
 
+          {depleted.length > 0 ? (
+            <div
+              role="status"
+              className="flex items-start gap-2.5 rounded-[var(--radius-sm)] bg-warning/10 p-3"
+            >
+              <PackageX className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
+              <div className="text-sm">
+                <p className="font-medium text-warning">{t("stock.warnTitle")}</p>
+                <p className="mt-0.5 text-ink-muted">
+                  {t("stock.warnBody", {
+                    provider: providerName,
+                    items: depleted.map((i) => i.name).join(", "),
+                  })}
+                </p>
+              </div>
+            </div>
+          ) : null}
+
           {total > 0 ? (
             <div className="flex items-center justify-between rounded-[var(--radius-sm)] bg-muted px-3 py-2 text-sm">
-              <span className="text-ink-muted">Estimated</span>
-              <span className="font-mono tnum font-medium">{formatBirr(total)}</span>
+              <span className="text-ink-muted">{t("send.estimated")}</span>
+              <span className="font-mono tnum font-medium">{money(total)}</span>
             </div>
           ) : null}
 
@@ -198,10 +232,10 @@ export function SendRequestSheet({
             disabled={mutation.isPending}
           >
             {mutation.isPending
-              ? "Sending…"
+              ? t("send.sending")
               : signedIn
-                ? "Join the queue"
-                : "Sign in and join the queue"}
+                ? t("send.join")
+                : t("send.joinSignedOut")}
           </Button>
         </div>
       </SheetContent>

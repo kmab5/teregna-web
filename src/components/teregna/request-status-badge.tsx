@@ -1,4 +1,7 @@
+"use client";
+
 import { Check, X, Clock, Loader } from "lucide-react";
+import { useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 import type { RequestStatus } from "@/lib/database.types";
 
@@ -8,26 +11,22 @@ import type { RequestStatus } from "@/lib/database.types";
  */
 const CONFIG: Record<
   RequestStatus,
-  { label: string; icon: typeof Check; className: string; dot?: boolean }
+  { icon: typeof Check; className: string; dot?: boolean }
 > = {
   queued: {
-    label: "Queued",
     icon: Clock,
     className: "text-ink-muted bg-muted",
   },
   in_progress: {
-    label: "In progress",
     icon: Loader,
     className: "text-primary bg-primary/10",
     dot: true,
   },
   completed: {
-    label: "Completed",
     icon: Check,
     className: "text-accent bg-accent/10",
   },
   cancelled: {
-    label: "Cancelled",
     icon: X,
     className: "text-destructive bg-destructive/10",
   },
@@ -42,7 +41,9 @@ export function RequestStatusBadge({
   position?: number | null;
   className?: string;
 }) {
-  const { label, icon: Icon, className: tone, dot } = CONFIG[status];
+  const t = useT();
+  const { icon: Icon, className: tone, dot } = CONFIG[status];
+  const label = t(`status.${status}`);
   return (
     <span
       className={cn(

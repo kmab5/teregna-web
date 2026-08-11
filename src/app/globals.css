@@ -129,9 +129,20 @@
     font-feature-settings: "cv11", "ss01";
   }
 
-  /* Amharic runs get a well-hinted Ethiopic face at every weight. */
+  /* Amharic runs get a well-hinted Ethiopic face.
+     Order matters: the Latin face comes FIRST so digits, prices and the brand
+     keep their intended shapes, and Ethiopic glyphs fall through to Noto. Noto
+     Sans Ethiopic ships Latin glyphs too, so listing it first would quietly
+     restyle every number on the page once <html lang="am">. */
   :lang(am), .am {
-    font-family: var(--font-ethiopic), var(--font-sans);
+    font-family: var(--font-sans), var(--font-ethiopic);
+  }
+
+  :lang(am) h1, :lang(am) h2, :lang(am) h3, :lang(am) .font-display {
+    font-family: var(--font-display), var(--font-ethiopic);
+    /* Ethiopic has no descender-heavy lowercase, so the tight display tracking
+       tuned for Latin reads cramped here. */
+    letter-spacing: 0;
   }
 
   h1, h2, h3, .font-display {

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
+import { useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 
 export interface TabItem {
@@ -26,10 +27,11 @@ export interface TabItem {
  */
 export function MobileTabBar({ tabs }: { tabs: TabItem[] }) {
   const pathname = usePathname();
+  const t = useT();
 
   return (
     <nav
-      aria-label="Main"
+      aria-label={t("nav.main")}
       className={cn(
         "fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface md:hidden",
         // Clears the iOS home indicator. Without it the last row of targets
@@ -54,7 +56,7 @@ export function MobileTabBar({ tabs }: { tabs: TabItem[] }) {
                 )}
               >
                 <Icon className="size-5" aria-hidden />
-                <span className="max-w-full truncate px-1">{label}</span>
+                <span className="max-w-full truncate px-1">{t(label as never)}</span>
               </Link>
             </li>
           );

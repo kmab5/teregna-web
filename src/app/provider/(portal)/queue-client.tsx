@@ -7,7 +7,8 @@ import { useMyProvider, useProviderItems, useProviderQueue, useProfile } from "@
 import { SetupChecklist, setupSteps } from "@/components/teregna/setup-checklist";
 import { useNow } from "@/lib/use-now";
 import { finishRequest, startRequest } from "@/lib/rpc";
-import { errorMessage, isRace } from "@/lib/errors";
+import { useT } from "@/i18n/client";
+import { errorKey, isRace } from "@/lib/errors";
 import { qk } from "@/lib/query-keys";
 import { QueueRow } from "@/components/teregna/queue-row";
 import { EmptyState } from "@/components/teregna/empty-state";
@@ -15,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { QueueRow as QueueRowData } from "@/lib/database.types";
 
 export function QueueClient() {
+  const t = useT();
   const qc = useQueryClient();
   const { data: provider, isPending: providerPending } = useMyProvider();
   const { data: queue, isPending } = useProviderQueue(provider?.id);
@@ -44,11 +46,11 @@ export function QueueClient() {
     onError: (error, _id, context) => {
       if (context?.previous) qc.setQueryData(key, context.previous);
       if (isRace(error)) qc.invalidateQueries({ queryKey: key });
-      toast.error(errorMessage(error));
+      toast.error(t(errorKey(error) as never));
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.archive(provider!.id) });
-      toast.success("Finished", { description: "It moved to your archive." });
+      toast.success(t("pq.finishedTitle"), { description: t("pq.finishedBody") });
     },
     onSettled: () => qc.invalidateQueries({ queryKey: key }),
   });
@@ -57,7 +59,7 @@ export function QueueClient() {
     mutationFn: (id: string) => startRequest(id),
     onError: (error) => {
       if (isRace(error)) qc.invalidateQueries({ queryKey: key });
-      toast.error(errorMessage(error));
+      toast.error(t(errorKey(error) as never));
     },
     onSettled: () => qc.invalidateQueries({ queryKey: key }),
   });
@@ -82,26 +84,26 @@ export function QueueClient() {
 
       <header className="mb-6 flex items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-semibold">Queue</h1>
+          <h1 className="font-display text-2xl font-semibold">{t("pq.title")}</h1>
           <p className="mt-1 text-ink-muted">
             {provider?.name}
-            {provider && !provider.is_active ? " · closed" : null}
+            {provider && !provider.is_active ? ` \u00B7 ${t("pq.closed")}` : null}
           </p>
         </div>
         <p className="font-mono tnum text-sm text-ink-muted">
           <span className="text-3xl font-semibold text-ink">{rows.length}</span>{" "}
-          waiting
+          {t("pq.waiting")}
         </p>
       </header>
 
       {rows.length === 0 ? (
         <EmptyState
           icon={CheckCheck}
-          title="Nobody is waiting"
+          title={t("pq.emptyTitle")}
           body={
             provider?.is_active
-              ? "New requests land here the moment they arrive."
-              : "You are closed, so nobody can send a request. Open up in Settings."
+              ? t("pq.emptyOpen")
+              : t("pq.emptyClosed")
           }
         />
       ) : (

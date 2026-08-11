@@ -4,7 +4,8 @@ import { Play, Check, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RequestStatusBadge } from "./request-status-badge";
 import { WaitTime } from "./wait-time";
-import { formatBirr } from "@/lib/format";
+import { useT } from "@/i18n/client";
+import { useLocaleFormat } from "@/lib/use-locale-format";
 import { cn } from "@/lib/utils";
 import type { QueueRow as QueueRowData } from "@/lib/database.types";
 
@@ -29,6 +30,8 @@ export function QueueRow({
   /** Ticking clock from the parent, so every row re-renders together. */
   now: number;
 }) {
+  const t = useT();
+  const { money } = useLocaleFormat();
   const active = row.status === "in_progress";
 
   return (
@@ -49,7 +52,7 @@ export function QueueRow({
             ? "border-primary bg-primary text-on-primary"
             : "border-border bg-surface text-ink",
         )}
-        aria-label={`Position ${row.position}`}
+        aria-label={t("pq.positionAria", { position: row.position })}
       >
         {row.position}
       </div>
@@ -73,7 +76,7 @@ export function QueueRow({
                 {it.name}
                 {it.price != null ? (
                   <span className="ml-1 text-ink-muted">
-                    {formatBirr(it.price)}
+                    {money(it.price)}
                   </span>
                 ) : null}
               </li>
@@ -115,7 +118,7 @@ export function QueueRow({
               className="flex-1 sm:flex-none"
             >
               <Play aria-hidden />
-              Start
+              {t("pq.start")}
             </Button>
           ) : null}
           <Button
@@ -126,7 +129,7 @@ export function QueueRow({
             className="flex-1 sm:flex-none"
           >
             <Check aria-hidden />
-            Finish
+            {t("pq.finish")}
           </Button>
         </div>
       </div>

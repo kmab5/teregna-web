@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { getClient } from "@/lib/supabase/client";
+import { useT } from "@/i18n/client";
 
 /**
  * Sign in with Google, using Google's own pre-approved button asset.
@@ -24,6 +25,7 @@ export function GoogleButton({
   next: string;
   className?: string;
 }) {
+  const t = useT();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +49,7 @@ export function GoogleButton({
 
     if (error) {
       setBusy(false);
-      setError("Google sign-in is unavailable right now. Use your email instead.");
+      setError(t("auth.googleFailed"));
       return;
     }
     // On success the browser navigates away, so leave it busy.
@@ -59,7 +61,7 @@ export function GoogleButton({
         type="button"
         onClick={signIn}
         disabled={busy}
-        aria-label="Sign in with Google"
+        aria-label={t("auth.google")}
         className="mx-auto block rounded-[4px] transition-opacity hover:opacity-90 disabled:opacity-60"
       >
         {/*
@@ -91,7 +93,7 @@ export function GoogleButton({
 
       {busy ? (
         <p className="mt-2 text-center text-sm text-ink-muted" role="status">
-          Taking you to Google…
+          {t("auth.googleBusy")}
         </p>
       ) : null}
 
@@ -105,11 +107,11 @@ export function GoogleButton({
 }
 
 /** "or" rule between the Google button and the email form. */
-export function AuthDivider() {
+export function AuthDivider({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3" aria-hidden>
       <span className="h-px flex-1 bg-border" />
-      <span className="text-xs uppercase tracking-wide text-ink-muted">or</span>
+      <span className="text-xs uppercase tracking-wide text-ink-muted">{label}</span>
       <span className="h-px flex-1 bg-border" />
     </div>
   );

@@ -1,7 +1,19 @@
-import { formatBirr } from "@/lib/format";
-import { cn } from "@/lib/utils";
-import type { Item } from "@/lib/database.types";
+"use client";
 
+import { PackageX } from "lucide-react";
+import { useT } from "@/i18n/client";
+import { useLocaleFormat } from "@/lib/use-locale-format";
+import { cn } from "@/lib/utils";
+import type { ItemView } from "@/lib/database.types";
+
+/**
+ * One thing a provider offers.
+ *
+ * Stock, when tracked, is shown as what is left *after the people already
+ * queued* - not raw shelf count. A depleted item is still selectable: the
+ * provider may restock, someone ahead may cancel, and it is their call, not
+ * ours. So it reads as information, never as a locked door.
+ */
 export function ItemRow({
   item,
   selected,
@@ -9,13 +21,16 @@ export function ItemRow({
   onToggle,
   onQuantity,
 }: {
-  item: Item;
+  item: ItemView;
   selected?: boolean;
   quantity?: number;
   onToggle?: () => void;
   onQuantity?: (n: number) => void;
 }) {
+  const t = useT();
+  const { money } = useLocaleFormat();
   const interactive = Boolean(onToggle);
+  const tracked = item.stock !== null;
 
   return (
     <div
@@ -29,8 +44,8 @@ export function ItemRow({
           type="checkbox"
           checked={Boolean(selected)}
           onChange={onToggle}
-          aria-label={`Add ${item.name}`}
-          className="size-5 accent-[var(--primary)]"
+          aria-label={t("send.addAria", { name: item.name })}
+          className="size-5 shrink-0 accent-[var(--primary)]"
         />
       ) : null}
 
@@ -39,15 +54,30 @@ export function ItemRow({
         {item.description ? (
           <p className="truncate text-sm text-ink-muted">{item.description}</p>
         ) : null}
+
+        {tracked ? (
+          item.is_depleted ? (
+            <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-warning">
+              <PackageX className="size-3.5" aria-hidden />
+              {t("stock.depleted")}
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-ink-muted">
+              <span className="font-mono tnum">
+                {t.plural("stock.left", item.available ?? 0)}
+              </span>
+            </p>
+          )
+        ) : null}
       </div>
 
       {selected && onQuantity ? (
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           <button
             type="button"
             onClick={() => onQuantity(Math.max(1, (quantity ?? 1) - 1))}
-            aria-label={`Fewer ${item.name}`}
-            className="size-8 rounded-[var(--radius-sm)] border border-border text-ink-muted hover:bg-muted"
+            aria-label={t("send.fewerAria", { name: item.name })}
+            className="size-9 rounded-[var(--radius-sm)] border border-border text-ink-muted hover:bg-muted"
           >
             −
           </button>
@@ -57,8 +87,8 @@ export function ItemRow({
           <button
             type="button"
             onClick={() => onQuantity(Math.min(99, (quantity ?? 1) + 1))}
-            aria-label={`More ${item.name}`}
-            className="size-8 rounded-[var(--radius-sm)] border border-border text-ink-muted hover:bg-muted"
+            aria-label={t("send.moreAria", { name: item.name })}
+            className="size-9 rounded-[var(--radius-sm)] border border-border text-ink-muted hover:bg-muted"
           >
             +
           </button>
@@ -66,7 +96,7 @@ export function ItemRow({
       ) : null}
 
       <span className="shrink-0 font-mono tnum text-sm text-ink-muted">
-        {formatBirr(item.price, item.currency)}
+        {money(item.price, item.currency)}
       </span>
     </div>
   );

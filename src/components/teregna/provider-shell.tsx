@@ -13,17 +13,18 @@ import {
   Settings,
   Sun,
 } from "lucide-react";
+import { useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 import { Mark } from "./logo";
 import { MobileTabBar, type TabItem } from "./mobile-tab-bar";
 import type { Provider } from "@/lib/database.types";
 
 const NAV: TabItem[] = [
-  { href: "/provider", label: "Queue", icon: ListOrdered },
-  { href: "/provider/archive", label: "Archive", icon: Archive },
-  { href: "/provider/items", label: "Items", icon: Package },
-  { href: "/provider/analytics", label: "Analytics", icon: ChartColumn },
-  { href: "/provider/settings", label: "Settings", icon: Settings },
+  { href: "/provider", label: "pq.title", icon: ListOrdered },
+  { href: "/provider/archive", label: "arc.title", icon: Archive },
+  { href: "/provider/items", label: "it.title", icon: Package },
+  { href: "/provider/analytics", label: "an.title", icon: ChartColumn },
+  { href: "/provider/settings", label: "set.title", icon: Settings },
 ];
 
 /**
@@ -48,6 +49,7 @@ export function ProviderShell({
 }) {
   const pathname = usePathname();
   const { setTheme } = useTheme();
+  const t = useT();
 
   return (
     <div className="min-h-dvh bg-bg">
@@ -58,7 +60,7 @@ export function ProviderShell({
           {/* Truncates rather than pushing the status pill off-screen. A long
               business name is normal, not an edge case. */}
           <span className="min-w-0 truncate text-sm font-semibold">
-            {provider?.name ?? "Your business"}
+            {provider?.name ?? t("nav.myBusiness")}
           </span>
 
           {provider ? (
@@ -79,7 +81,7 @@ export function ProviderShell({
                 )}
                 aria-hidden
               />
-              {provider.is_active ? "Open" : "Closed"}
+              {provider.is_active ? t("chk.open") : t("pq.closed")}
             </span>
           ) : null}
 
@@ -93,7 +95,7 @@ export function ProviderShell({
                     : "dark",
                 )
               }
-              aria-label="Switch theme"
+              aria-label={t("common.switchTheme")}
               className="rounded-[var(--radius-sm)] p-2 text-on-chrome-muted transition-colors hover:bg-chrome-border hover:text-on-chrome"
             >
               <Moon className="size-4 dark:hidden" aria-hidden />
@@ -104,17 +106,17 @@ export function ProviderShell({
                 phones, where the label cost 100px it did not have. */}
             <Link
               href="/browse"
-              aria-label="Customer view"
+              aria-label={t("nav.customerView")}
               className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] p-2 text-xs font-medium text-on-chrome-muted transition-colors hover:bg-chrome-border hover:text-on-chrome sm:px-3"
             >
-              <span className="hidden sm:inline">Customer view</span>
+              <span className="hidden sm:inline">{t("nav.customerView")}</span>
               <ExternalLink className="size-4 sm:size-3" aria-hidden />
             </Link>
           </div>
         </div>
 
         {/* Tabs on desktop only; phones get the bottom bar. */}
-        <nav aria-label="Provider" className="mx-auto hidden max-w-6xl px-4 md:block">
+        <nav aria-label={t("nav.main")} className="mx-auto hidden max-w-6xl px-4 md:block">
           <ul className="flex gap-1">
             {NAV.map(({ href, label, icon: Icon }) => {
               const active = pathname === href;
@@ -131,7 +133,7 @@ export function ProviderShell({
                     )}
                   >
                     <Icon className="size-4" aria-hidden />
-                    {label}
+                    {t(label as never)}
                   </Link>
                 </li>
               );

@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { Archive } from "lucide-react";
 import { useMyProvider, useProviderArchive } from "@/lib/queries";
 import { restoreRequest } from "@/lib/rpc";
-import { errorMessage, isRace } from "@/lib/errors";
+import { useT } from "@/i18n/client";
+import { errorKey, isRace } from "@/lib/errors";
 import { qk } from "@/lib/query-keys";
 import { ArchiveRow } from "@/components/teregna/archive-row";
 import { EmptyState } from "@/components/teregna/empty-state";
@@ -17,6 +18,7 @@ import type { RequestStatus } from "@/lib/database.types";
 type Filter = "all" | RequestStatus;
 
 export function ArchiveClient() {
+  const t = useT();
   const qc = useQueryClient();
   const { data: provider } = useMyProvider();
   const { data, isPending } = useProviderArchive(provider?.id);
@@ -29,13 +31,13 @@ export function ArchiveClient() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.archive(provider!.id) });
       qc.invalidateQueries({ queryKey: qk.queue(provider!.id) });
-      toast.success("Back in the queue", {
-        description: "It joined the end of the line.",
+      toast.success(t("arc.restoredTitle"), {
+        description: t("arc.restoredBody"),
       });
     },
     onError: (error) => {
       if (isRace(error)) qc.invalidateQueries({ queryKey: qk.archive(provider!.id) });
-      toast.error(errorMessage(error));
+      toast.error(t(errorKey(error) as never));
     },
   });
 
@@ -55,10 +57,9 @@ export function ArchiveClient() {
   return (
     <>
       <header className="mb-6">
-        <h1 className="font-display text-2xl font-semibold">Archive</h1>
+        <h1 className="font-display text-2xl font-semibold">{t("arc.title")}</h1>
         <p className="mt-1 text-ink-muted">
-          Everything you finished or cancelled. Nothing here is gone — you can
-          send any of it back to the queue.
+          {t("arc.subtitle")}
         </p>
       </header>
 
@@ -76,7 +77,7 @@ export function ArchiveClient() {
                 : "bg-muted text-ink-muted hover:text-ink",
             )}
           >
-            {f}
+            {f === "all" ? t("common.all") : t(`status.${f}` as never)}
           </button>
         ))}
       </div>
@@ -84,8 +85,8 @@ export function ArchiveClient() {
       {rows.length === 0 ? (
         <EmptyState
           icon={Archive}
-          title="Nothing archived yet"
-          body="Requests land here once you finish or cancel them."
+          title={t("arc.emptyTitle")}
+          body={t("arc.emptyBody")}
         />
       ) : (
         <ul className="space-y-3">

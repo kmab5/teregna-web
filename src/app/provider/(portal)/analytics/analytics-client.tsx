@@ -5,17 +5,16 @@ import { useMyProvider, useAnalytics } from "@/lib/queries";
 import { StatCard } from "@/components/teregna/stat-card";
 import { ChartCard } from "@/components/teregna/chart-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatDay, formatDuration, formatPercent } from "@/lib/format";
+import { formatDuration } from "@/lib/format";
+import { useT } from "@/i18n/client";
+import { useLocaleFormat } from "@/lib/use-locale-format";
 import { cn } from "@/lib/utils";
 
-const RANGES = [
-  { days: 7, label: "7 days" },
-  { days: 30, label: "30 days" },
-  { days: 90, label: "90 days" },
-];
-
 export function AnalyticsClient() {
+  const t = useT();
+  const { day, percent } = useLocaleFormat();
   const [days, setDays] = useState(30);
+  const RANGES = [7, 30, 90];
   const { data: provider } = useMyProvider();
   const { data, isPending } = useAnalytics(provider?.id, days);
 
@@ -23,24 +22,24 @@ export function AnalyticsClient() {
     <>
       <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-semibold">Analytics</h1>
-          <p className="mt-1 text-ink-muted">How the queue has been moving.</p>
+          <h1 className="font-display text-2xl font-semibold">{t("an.title")}</h1>
+          <p className="mt-1 text-ink-muted">{t("an.subtitle")}</p>
         </div>
         <div className="flex gap-2">
           {RANGES.map((r) => (
             <button
-              key={r.days}
+              key={r}
               type="button"
-              onClick={() => setDays(r.days)}
-              aria-pressed={days === r.days}
+              onClick={() => setDays(r)}
+              aria-pressed={days === r}
               className={cn(
                 "rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
-                days === r.days
+                days === r
                   ? "bg-primary text-on-primary"
                   : "bg-muted text-ink-muted hover:text-ink",
               )}
             >
-              {r.label}
+              {t("an.days", { count: r })}
             </button>
           ))}
         </div>
@@ -56,40 +55,40 @@ export function AnalyticsClient() {
       ) : (
         <div className="space-y-6">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <StatCard label="Requests" value={String(data.totals.total)} hint="Created in this period" />
-            <StatCard label="Completed" value={String(data.totals.completed)} />
-            <StatCard label="Cancelled" value={String(data.totals.cancelled)} />
+            <StatCard label={t("an.requests")} value={String(data.totals.total)} hint={t("an.requestsHint")} />
+            <StatCard label={t("an.completed")} value={String(data.totals.completed)} />
+            <StatCard label={t("an.cancelled")} value={String(data.totals.cancelled)} />
             <StatCard
-              label="Completion rate"
-              value={formatPercent(data.completion_rate)}
-              hint="Completed vs. completed + cancelled"
+              label={t("an.rate")}
+              value={percent(data.completion_rate)}
+              hint={t("an.rateHint")}
             />
             <StatCard
-              label="Typical wait to finish"
+              label={t("an.typical")}
               value={formatDuration(data.median_time_to_complete_seconds)}
-              hint={`Average ${formatDuration(data.avg_time_to_complete_seconds)}`}
+              hint={t("an.typicalHint", { value: formatDuration(data.avg_time_to_complete_seconds) })}
             />
             <StatCard
-              label="Waiting right now"
+              label={t("an.now")}
               value={String(data.current_queue_length)}
-              hint="Live, not part of the range"
+              hint={t("an.nowHint")}
             />
           </div>
 
           <ChartCard
-            title="Requests over time"
-            description="Every day in the range, including the quiet ones."
+            title={t("an.overTime")}
+            description={t("an.overTimeHint")}
             kind="area"
             data={data.over_time.map((p) => ({
-              label: formatDay(p.day),
+              label: day(p.day),
               value: p.count,
             }))}
           />
 
           <div className="grid gap-6 lg:grid-cols-2">
             <ChartCard
-              title="Most requested"
-              description="By number of requests that included the item."
+              title={t("an.byItem")}
+              description={t("an.byItemHint")}
               horizontal
               data={data.by_item.slice(0, 8).map((p) => ({
                 label: p.item,
@@ -97,8 +96,8 @@ export function AnalyticsClient() {
               }))}
             />
             <ChartCard
-              title="Busiest hours"
-              description="Local time, all 24 hours shown."
+              title={t("an.hours")}
+              description={t("an.hoursHint")}
               data={data.busiest_hours.map((p) => ({
                 label: `${String(p.hour).padStart(2, "0")}:00`,
                 value: p.count,

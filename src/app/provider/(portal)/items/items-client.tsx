@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import { useMyProvider, useProviderItems } from "@/lib/queries";
 import { deleteItem, reorderItems, setItemVisible, upsertItem } from "@/lib/rpc";
-import { errorMessage } from "@/lib/errors";
+import { useT } from "@/i18n/client";
+import { errorKey } from "@/lib/errors";
 import { qk } from "@/lib/query-keys";
 import { EmptyState } from "@/components/teregna/empty-state";
 import { Button } from "@/components/ui/button";
@@ -24,11 +25,13 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { formatBirr } from "@/lib/format";
+import { useLocaleFormat } from "@/lib/use-locale-format";
 import { cn } from "@/lib/utils";
 import type { Item } from "@/lib/database.types";
 
 export function ItemsClient() {
+  const t = useT();
+  const { money } = useLocaleFormat();
   const qc = useQueryClient();
   const { data: provider } = useMyProvider();
   const { data, isPending } = useProviderItems(provider?.id ?? "");
@@ -49,7 +52,7 @@ export function ItemsClient() {
     mutationFn: ({ id, visible }: { id: string; visible: boolean }) =>
       setItemVisible(id, visible),
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => toast.error(t(errorKey(e) as never)),
   });
 
   const remove = useMutation({
@@ -58,11 +61,11 @@ export function ItemsClient() {
       qc.invalidateQueries({ queryKey: key });
       setConfirmDelete(null);
       // Snapshots mean history survives the delete. Say so - it is reassuring.
-      toast.success("Item removed", {
-        description: "Past requests keep the name and price they were sent with.",
+      toast.success(t("it.removedTitle"), {
+        description: t("it.removedBody"),
       });
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => toast.error(t(errorKey(e) as never)),
   });
 
   /**
@@ -86,7 +89,7 @@ export function ItemsClient() {
     },
     onError: (e, _v, context) => {
       if (context?.previous) qc.setQueryData(key, context.previous);
-      toast.error(errorMessage(e));
+      toast.error(t(errorKey(e) as never));
     },
     onSettled: () => qc.invalidateQueries({ queryKey: key }),
   });
@@ -114,33 +117,32 @@ export function ItemsClient() {
     <>
       <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-semibold">Items</h1>
+          <h1 className="font-display text-2xl font-semibold">{t("it.title")}</h1>
           <p className="mt-1 text-ink-muted">
-            Hidden items disappear for customers straight away. Nothing already
-            requested is affected.
+            {t("it.subtitle")}
           </p>
         </div>
         <Button onClick={() => openEditor(null)} className="w-full sm:w-auto">
           <Plus aria-hidden />
-          Add item
+          {t("it.add")}
         </Button>
       </header>
 
       {items.length === 0 ? (
         <EmptyState
           icon={Package}
-          title="Nothing listed yet"
-          body="Add what you offer so customers know what to ask for."
+          title={t("it.emptyTitle")}
+          body={t("it.emptyBody")}
           action={
             <Button onClick={() => openEditor(null)}>
-              <Plus aria-hidden /> Add your first item
+              <Plus aria-hidden /> {t("it.addFirst")}
             </Button>
           }
         />
       ) : (
         <>
           <p className="mb-3 text-sm text-ink-muted">
-            Customers see them in this order.
+            {t("it.orderNote")}
           </p>
           <ul className="space-y-2">
             {items.map((item, index) => (
@@ -159,7 +161,7 @@ export function ItemsClient() {
                     type="button"
                     onClick={() => move(index, -1)}
                     disabled={index === 0 || reorder.isPending}
-                    aria-label={`Move ${item.name} up`}
+                    aria-label={t("it.moveUp", { name: item.name })}
                     className="rounded-t-[var(--radius-sm)] px-1.5 py-0.5 text-ink-muted transition-colors hover:bg-muted hover:text-ink disabled:opacity-30 disabled:hover:bg-transparent"
                   >
                     <ChevronUp className="size-4" aria-hidden />
@@ -168,7 +170,7 @@ export function ItemsClient() {
                     type="button"
                     onClick={() => move(index, 1)}
                     disabled={index === items.length - 1 || reorder.isPending}
-                    aria-label={`Move ${item.name} down`}
+                    aria-label={t("it.moveDown", { name: item.name })}
                     className="rounded-b-[var(--radius-sm)] px-1.5 py-0.5 text-ink-muted transition-colors hover:bg-muted hover:text-ink disabled:opacity-30 disabled:hover:bg-transparent"
                   >
                     <ChevronDown className="size-4" aria-hidden />
@@ -198,11 +200,26 @@ export function ItemsClient() {
                 {/* Controls row. Wraps under the name on phones, sits inline
                     from 640px up. */}
                 <div className="flex items-center gap-3 sm:shrink-0">
-                <div className="flex shrink-0 items-center gap-3 font-mono tnum text-sm text-ink-muted">
-                  {item.duration_minutes ? (
-                    <span title="Typical minutes">{item.duration_minutes}m</span>
+                <div className="flex shrink-0 flex-col items-end font-mono tnum text-sm text-ink-muted">
+                  <div className="flex items-center gap-3">
+                    {item.duration_minutes ? (
+                      <span title={t("it.minutes")}>{item.duration_minutes}m</span>
+                    ) : null}
+                    <span>{money(item.price, item.currency)}</span>
+                  </div>
+                  {item.stock !== null ? (
+                    <span
+                      className={cn(
+                        "text-xs",
+                        item.is_depleted ? "text-warning" : "text-ink-muted",
+                      )}
+                      title={t.plural("stock.promised", item.committed)}
+                    >
+                      {item.is_depleted
+                        ? t("stock.depleted")
+                        : t.plural("stock.left", item.available ?? 0)}
+                    </span>
                   ) : null}
-                  <span>{formatBirr(item.price, item.currency)}</span>
                 </div>
 
                 <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:ml-0">
@@ -211,7 +228,7 @@ export function ItemsClient() {
                     onCheckedChange={(v) =>
                       toggle.mutate({ id: item.id, visible: v })
                     }
-                    aria-label={`${item.is_visible ? "Hide" : "Show"} ${item.name} from customers`}
+                    aria-label={item.is_visible ? t("it.hideAria", { name: item.name }) : t("it.showAria", { name: item.name })}
                   />
                   {item.is_visible ? (
                     <Eye className="size-4 text-accent" aria-hidden />
@@ -226,7 +243,7 @@ export function ItemsClient() {
                   <button
                     type="button"
                     onClick={() => openEditor(item)}
-                    aria-label={`Edit ${item.name}`}
+                    aria-label={t("it.edit", { name: item.name })}
                     className="rounded-[var(--radius-sm)] p-2 text-ink-muted transition-colors hover:bg-muted hover:text-primary"
                   >
                     <Pencil className="size-4" aria-hidden />
@@ -234,7 +251,7 @@ export function ItemsClient() {
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(item)}
-                    aria-label={`Remove ${item.name}`}
+                    aria-label={t("it.removeAria", { name: item.name })}
                     className="rounded-[var(--radius-sm)] p-2 text-ink-muted transition-colors hover:bg-muted hover:text-destructive"
                   >
                     <Trash2 className="size-4" aria-hidden />
@@ -265,16 +282,13 @@ export function ItemsClient() {
         open={Boolean(confirmDelete)}
         onOpenChange={(v) => !v && setConfirmDelete(null)}
       >
-        <SheetContent title={`Remove ${confirmDelete?.name ?? "item"}?`}>
+        <SheetContent title={t("it.confirmTitle", { name: confirmDelete?.name ?? "" })}>
           <div className="space-y-4">
             <p className="text-sm text-ink-muted">
-              Customers will stop seeing it immediately. Requests that already
-              included it keep the name and price they were sent with, so your
-              history stays accurate.
+              {t("it.confirmBody")}
             </p>
             <p className="text-sm text-ink-muted">
-              If you only want to take it off the menu for now, hide it instead —
-              that is reversible.
+              {t("it.confirmHint")}
             </p>
             <div className="flex gap-2">
               <Button
@@ -282,7 +296,7 @@ export function ItemsClient() {
                 className="flex-1"
                 onClick={() => setConfirmDelete(null)}
               >
-                Keep it
+                {t("it.keepIt")}
               </Button>
               <Button
                 variant="destructive"
@@ -290,7 +304,7 @@ export function ItemsClient() {
                 onClick={() => confirmDelete && remove.mutate(confirmDelete.id)}
                 disabled={remove.isPending}
               >
-                {remove.isPending ? "Removing…" : "Remove"}
+                {remove.isPending ? t("it.removing") : t("it.remove")}
               </Button>
             </div>
           </div>
@@ -313,6 +327,7 @@ function ItemSheet({
   providerId: string | undefined;
   onSaved: () => void;
 }) {
+  const t = useT();
   // Initialised from props on mount. The parent remounts this on every open,
   // so there is no reset logic to get wrong.
   const [name, setName] = useState(item?.name ?? "");
@@ -324,6 +339,7 @@ function ItemSheet({
     item?.duration_minutes != null ? String(item.duration_minutes) : "",
   );
   const [visible, setVisible] = useState(item?.is_visible ?? true);
+  const [stock, setStock] = useState(item?.stock != null ? String(item.stock) : "");
 
   const save = useMutation({
     mutationFn: () =>
@@ -333,34 +349,36 @@ function ItemSheet({
         description: description.trim() || null,
         price: price ? Number(price) : null,
         duration_minutes: duration ? Number(duration) : null,
+        // Blank means "stop counting", which the RPC distinguishes from omitted.
+        stock: stock.trim() === "" ? null : Number(stock),
         is_visible: visible,
       }),
     onSuccess: () => {
       onSaved();
       onOpenChange(false);
-      toast.success(item ? "Item updated" : "Item added");
+      toast.success(item ? t("it.updated") : t("it.added"));
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => toast.error(t(errorKey(e) as never)),
   });
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent title={item ? `Edit ${item.name}` : "Add an item"}>
+      <SheetContent title={item ? t("it.editTitle", { name: item.name }) : t("it.addTitle")}>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="item-name">Name</Label>
+            <Label htmlFor="item-name">{t("it.name")}</Label>
             <Input
               id="item-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Haircut"
+              placeholder={t("it.namePlaceholder")}
               autoFocus
             />
           </div>
 
           <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="item-price">Price (ETB)</Label>
+              <Label htmlFor="item-price">{t("it.price")}</Label>
               <Input
                 id="item-price"
                 type="number"
@@ -373,8 +391,8 @@ function ItemSheet({
             </div>
             <div className="space-y-2">
               <Label htmlFor="item-duration">
-                Minutes
-                <span className="ml-1.5 font-normal text-ink-muted">optional</span>
+                {t("it.minutes")}
+                <span className="ml-1.5 font-normal text-ink-muted">{t("common.optional")}</span>
               </Label>
               <Input
                 id="item-duration"
@@ -388,25 +406,43 @@ function ItemSheet({
             </div>
           </div>
           <p className="-mt-2 text-xs text-ink-muted">
-            Minutes are not shown to customers yet. They will be used to estimate
-            waiting times.
+            {t("it.minutesHint")}
           </p>
 
           <div className="space-y-2">
-            <Label htmlFor="item-desc">Description</Label>
+            <Label htmlFor="item-stock">
+              {t("stock.label")}
+              <span className="ml-1.5 font-normal text-ink-muted">
+                {t("common.optional")}
+              </span>
+            </Label>
+            <Input
+              id="item-stock"
+              type="number"
+              min={0}
+              value={stock}
+              onChange={(e) => setStock(e.target.value)}
+              placeholder={t("stock.untracked")}
+              className="font-mono"
+            />
+            <p className="text-xs text-ink-muted">{t("it.stockHint")}</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="item-desc">{t("it.description")}</Label>
             <Textarea
               id="item-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Standard cut and style"
+              placeholder={t("it.descriptionPlaceholder")}
             />
           </div>
 
           <div className="flex items-center justify-between rounded-[var(--radius-sm)] border border-border p-3">
             <div>
-              <Label htmlFor="item-visible">Show to customers</Label>
+              <Label htmlFor="item-visible">{t("it.visible")}</Label>
               <p className="text-xs text-ink-muted">
-                Hidden items stay in your list but nobody can request them.
+                {t("it.visibleHint")}
               </p>
             </div>
             <Switch
@@ -422,7 +458,7 @@ function ItemSheet({
               className="flex-1"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               className="flex-1"
@@ -430,7 +466,7 @@ function ItemSheet({
               onClick={() => save.mutate()}
               disabled={!name.trim() || save.isPending}
             >
-              {save.isPending ? "Saving…" : item ? "Save changes" : "Add item"}
+              {save.isPending ? t("common.saving") : item ? t("common.save") : t("it.add")}
             </Button>
           </div>
         </div>

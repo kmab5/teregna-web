@@ -16,8 +16,8 @@ export default async function Page({
     <AuthForm
       mode="signin"
       audience="receiver"
-      title="Welcome back"
-      subtitle="Sign in to send requests and track your place in line."
+      titleKey="auth.welcome"
+      subtitleKey="auth.welcome"
       nextParam={next}
       errorParam={error}
     />

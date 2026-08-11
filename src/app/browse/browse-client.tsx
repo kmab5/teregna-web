@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search, SearchX } from "lucide-react";
 import { useCategories, useDiscovery } from "@/lib/queries";
+import { useT } from "@/i18n/client";
 import { ProviderCard } from "@/components/teregna/provider-card";
 import { EmptyState } from "@/components/teregna/empty-state";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export function BrowseClient() {
+  const t = useT();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const { data: categories } = useCategories();
@@ -37,8 +39,8 @@ export function BrowseClient() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name"
-            aria-label="Search providers by name"
+            placeholder={t("browse.searchPlaceholder")}
+            aria-label={t("browse.searchLabel")}
             className="pl-9"
           />
         </div>
@@ -46,7 +48,7 @@ export function BrowseClient() {
         {/* Only rendered once we know what exists. One category is not a
             filter - it is the whole list - so the row stays hidden. */}
         {categories && categories.length > 1 ? (
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by category">
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t("browse.filterLabel")}>
             <button
               type="button"
               onClick={() => setCategory(null)}
@@ -58,7 +60,7 @@ export function BrowseClient() {
                   : "bg-muted text-ink-muted hover:text-ink",
               )}
             >
-              All
+              {t("common.all")}
             </button>
             {categories.map((c) => (
               <button
@@ -90,8 +92,8 @@ export function BrowseClient() {
         ) : isError ? (
           <EmptyState
             icon={SearchX}
-            title="We could not load providers"
-            body="Check your connection and try again."
+            title={t("browse.errorTitle")}
+            body={t("browse.errorBody")}
           />
         ) : data && data.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -102,11 +104,11 @@ export function BrowseClient() {
         ) : (
           <EmptyState
             icon={SearchX}
-            title="Nothing matches that yet"
+            title={t("browse.emptyTitle")}
             body={
               search || activeCategory
-                ? "Try a different name, or clear the filters."
-                : "No providers are open right now. Check back shortly."
+                ? t("browse.emptyFiltered")
+                : t("browse.emptyNone")
             }
           />
         )}

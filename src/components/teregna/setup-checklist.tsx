@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Check, CircleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 import type { Item, Profile, Provider } from "@/lib/database.types";
 
@@ -29,43 +30,44 @@ export function setupSteps(
   return [
     {
       id: "details",
-      label: "Add your location and category",
+      label: "chk.details",
       done: Boolean(provider?.location && provider?.category),
       href: "/provider/settings",
-      cta: "Add details",
+      cta: "chk.detailsCta",
     },
     {
       id: "phone",
-      label: "Add a phone number",
+      label: "chk.phone",
       done: Boolean(profile?.phone),
       href: "/provider/settings",
-      cta: "Add phone",
+      cta: "chk.phoneCta",
     },
     {
       id: "items",
-      label: "List at least one service",
+      label: "chk.items",
       done: items.length > 0,
       href: "/provider/items",
-      cta: "Add a service",
+      cta: "chk.itemsCta",
     },
     {
       id: "visible",
-      label: "Make a service visible to customers",
+      label: "chk.visible",
       done: items.some((i) => i.is_visible),
       href: "/provider/items",
-      cta: "Show a service",
+      cta: "chk.visibleCta",
     },
     {
       id: "open",
-      label: "Open for requests",
+      label: "chk.open",
       done: Boolean(provider?.is_active),
       href: "/provider/settings",
-      cta: "Open up",
+      cta: "chk.openCta",
     },
   ];
 }
 
 export function SetupChecklist({ steps }: { steps: SetupStep[] }) {
+  const t = useT();
   const remaining = steps.filter((s) => !s.done);
   if (remaining.length === 0) return null;
 
@@ -81,12 +83,11 @@ export function SetupChecklist({ steps }: { steps: SetupStep[] }) {
         <div className="min-w-0 flex-1">
           <h2 id="setup-heading" className="font-display text-lg font-semibold">
             {remaining.length === steps.length
-              ? "Customers cannot find you yet"
-              : `${remaining.length} thing${remaining.length === 1 ? "" : "s"} left before customers can find you`}
+              ? t("chk.headingAll")
+              : t.plural("chk.heading", remaining.length)}
           </h2>
           <p className="mt-1 text-sm text-ink-muted">
-            Your queue stays empty until your listing is complete and at least
-            one service is visible.
+            {t("chk.body")}
           </p>
 
           <ul className="mt-4 space-y-2">
@@ -104,15 +105,15 @@ export function SetupChecklist({ steps }: { steps: SetupStep[] }) {
                   {step.done ? <Check className="size-3" /> : null}
                 </span>
                 <span className={cn(step.done && "text-ink-muted line-through")}>
-                  {step.label}
+                  {t(step.label as never)}
                 </span>
-                {step.done ? <span className="sr-only">done</span> : null}
+                {step.done ? <span className="sr-only">{t("chk.done")}</span> : null}
               </li>
             ))}
           </ul>
 
           <Button asChild className="mt-4">
-            <Link href={next.href}>{next.cta}</Link>
+            <Link href={next.href}>{t(next.cta as never)}</Link>
           </Button>
         </div>
       </div>

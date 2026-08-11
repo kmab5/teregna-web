@@ -2,6 +2,7 @@
 
 import { Clock } from "lucide-react";
 import { elapsed } from "@/lib/format";
+import { useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 
 /**
@@ -26,7 +27,12 @@ export function WaitTime({
   size?: "sm" | "lg";
   className?: string;
 }) {
-  const { value, unit, minutes } = elapsed(since, now);
+  const t = useT();
+  const { value, minutes } = elapsed(since, now);
+  // Amharic puts 0 in the `one` plural category, so the unit is chosen by
+  // Intl.PluralRules rather than an `=== 1` check.
+  const unit =
+    minutes < 60 ? t.plural("wait.min", minutes) : t.plural("wait.hr", Math.floor(minutes / 60));
 
   const tone =
     minutes >= 45
@@ -42,7 +48,7 @@ export function WaitTime({
           {value}
         </span>
         <span className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-ink-muted">
-          {unit} waiting
+          {t("wait.waiting", { value: "", unit }).trim()}
         </span>
       </div>
     );
@@ -51,11 +57,11 @@ export function WaitTime({
   return (
     <span
       className={cn("inline-flex items-center gap-1 text-xs", tone, className)}
-      title={`Waiting ${value} ${unit}`}
+      title={t("wait.waiting", { value, unit })}
     >
       <Clock className="size-3.5" aria-hidden />
       <span className="font-mono tnum font-medium">{value}</span>
-      <span>{unit} waiting</span>
+      <span>{t("wait.waiting", { value: "", unit }).trim()}</span>
     </span>
   );
 }

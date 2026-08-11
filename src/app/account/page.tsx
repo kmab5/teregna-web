@@ -1,19 +1,20 @@
 import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/teregna/site-header";
 import { getUser } from "@/lib/supabase/server";
+import { getT } from "@/i18n/server";
 import { AccountClient } from "./account-client";
 
 export const metadata = { title: "Your account — Teregna" };
 
 export default async function AccountPage() {
-  const user = await getUser();
+  const [user, t] = await Promise.all([getUser(), getT()]);
   if (!user) redirect("/login?next=/account");
 
   return (
     <>
       <SiteHeader signedIn />
       <main id="main" className="mx-auto max-w-2xl px-4 py-6 pb-24 md:py-10 md:pb-10">
-        <h1 className="font-display text-2xl font-semibold">Your account</h1>
+        <h1 className="font-display text-2xl font-semibold">{t("acct.title")}</h1>
         <AccountClient email={user.email ?? ""} />
       </main>
     </>

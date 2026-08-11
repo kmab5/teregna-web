@@ -8,7 +8,7 @@ import { qk } from "./query-keys";
 import * as rpc from "./rpc";
 import type {
   ArchiveRow,
-  Item,
+  ItemView,
   MyRequest,
   Profile,
   Provider,
@@ -68,18 +68,25 @@ export function useCategories() {
   });
 }
 
+/**
+ * Items with availability. Reads `items_view` rather than `items` so the
+ * queue-aware `available` count comes from the database - a client cannot derive
+ * it, because it depends on other people's requests.
+ */
 export function useProviderItems(providerId: string) {
   return useQuery({
     queryKey: qk.providerItems(providerId),
-    queryFn: async (): Promise<Item[]> => {
+    queryFn: async (): Promise<ItemView[]> => {
       const { data, error } = await getClient()
-        .from("items")
+        .from("items_view")
         .select("*")
         .eq("provider_id", providerId)
         .order("display_order");
       if (error) throw error;
-      return (data ?? []) as Item[];
+      return (data ?? []) as ItemView[];
     },
+    // Availability moves as the queue moves.
+    staleTime: 15_000,
   });
 }
 

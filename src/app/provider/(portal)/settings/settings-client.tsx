@@ -5,7 +5,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useMyProvider, useProfile } from "@/lib/queries";
 import { setProviderActive, upsertProfile, upsertProvider } from "@/lib/rpc";
-import { errorMessage } from "@/lib/errors";
+import { useT } from "@/i18n/client";
+import { errorKey } from "@/lib/errors";
 import { qk } from "@/lib/query-keys";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
@@ -14,8 +15,10 @@ import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeleteAccount } from "@/components/teregna/delete-account";
+import { LanguageSwitcher } from "@/components/teregna/language-switcher";
 
 export function SettingsClient() {
+  const t = useT();
   const qc = useQueryClient();
   const { data: provider, isPending } = useMyProvider();
   const { data: profile } = useProfile();
@@ -31,13 +34,11 @@ export function SettingsClient() {
     mutationFn: (value: boolean) => setProviderActive(provider!.id, value),
     onSuccess: (_d, value) => {
       qc.invalidateQueries({ queryKey: qk.myProvider() });
-      toast.success(value ? "You are open" : "You are closed", {
-        description: value
-          ? "Customers can find you and send requests."
-          : "Nobody new can join. Everyone already queued is still there.",
+      toast.success(value ? t("set.openedTitle") : t("set.closedTitle"), {
+        description: value ? t("set.openedBody") : t("set.closedBody"),
       });
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => toast.error(t(errorKey(e) as never)),
   });
 
   const saveProfile = useMutation({
@@ -48,9 +49,9 @@ export function SettingsClient() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.profile() });
-      toast.success("Saved");
+      toast.success(t("set.saved"));
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => toast.error(t(errorKey(e) as never)),
   });
 
   const save = useMutation({
@@ -64,9 +65,9 @@ export function SettingsClient() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.myProvider() });
-      toast.success("Saved");
+      toast.success(t("set.saved"));
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => toast.error(t(errorKey(e) as never)),
   });
 
   if (isPending || !provider) {
@@ -81,34 +82,33 @@ export function SettingsClient() {
   return (
     <>
       <header className="mb-6">
-        <h1 className="font-display text-2xl font-semibold">Settings</h1>
+        <h1 className="font-display text-2xl font-semibold">{t("set.title")}</h1>
       </header>
 
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Open for requests</CardTitle>
+            <CardTitle>{t("set.openTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-between gap-6">
             <p className="text-sm text-ink-muted">
-              Closing hides you from search and stops new requests. Your current
-              queue is untouched, so you can finish the people already waiting.
+              {t("set.openBody")}
             </p>
             <Switch
               checked={provider.is_active}
               onCheckedChange={(v) => active.mutate(v)}
-              aria-label="Open for requests"
+              aria-label={t("set.openTitle")}
             />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Details</CardTitle>
+            <CardTitle>{t("set.details")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="p-name">Name</Label>
+              <Label htmlFor="p-name">{t("set.bizName")}</Label>
               <Input
                 id="p-name"
                 value={name ?? provider.name}
@@ -116,16 +116,16 @@ export function SettingsClient() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="p-location">Location</Label>
+              <Label htmlFor="p-location">{t("set.location")}</Label>
               <Input
                 id="p-location"
                 value={location ?? provider.location ?? ""}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="Bole, Addis Ababa"
+                placeholder={t("set.locationPlaceholder")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="p-desc">Description</Label>
+              <Label htmlFor="p-desc">{t("set.description")}</Label>
               <Textarea
                 id="p-desc"
                 value={description ?? provider.description ?? ""}
@@ -133,7 +133,7 @@ export function SettingsClient() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="p-category">Category</Label>
+              <Label htmlFor="p-category">{t("set.category")}</Label>
               <Input
                 id="p-category"
                 value={category ?? provider.category ?? ""}
@@ -142,18 +142,18 @@ export function SettingsClient() {
               />
             </div>
             <Button onClick={() => save.mutate()} disabled={save.isPending}>
-              {save.isPending ? "Saving…" : "Save changes"}
+              {save.isPending ? t("common.saving") : t("common.save")}
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Your details</CardTitle>
+            <CardTitle>{t("set.yourDetails")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="u-name">Your name</Label>
+              <Label htmlFor="u-name">{t("set.yourName")}</Label>
               <Input
                 id="u-name"
                 value={displayName ?? profile?.display_name ?? ""}
@@ -162,7 +162,7 @@ export function SettingsClient() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="u-phone">Phone number</Label>
+              <Label htmlFor="u-phone">{t("set.phone")}</Label>
               <Input
                 id="u-phone"
                 type="tel"
@@ -173,28 +173,36 @@ export function SettingsClient() {
                 className="font-mono"
               />
               <p className="text-xs text-ink-muted">
-                Never shown publicly.
+                {t("set.phoneHint")}
               </p>
             </div>
             <Button onClick={() => saveProfile.mutate()} disabled={saveProfile.isPending}>
-              {saveProfile.isPending ? "Saving…" : "Save details"}
+              {saveProfile.isPending ? t("common.saving") : t("set.saveDetails")}
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Account</CardTitle>
+            <CardTitle>{t("common.language")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LanguageSwitcher />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("set.account")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <form action="/auth/signout" method="post">
-              <Button type="submit" variant="outline">Sign out</Button>
+              <Button type="submit" variant="outline">{t("set.signOut")}</Button>
             </form>
 
             <div className="border-t border-border pt-4">
               <p className="mb-3 text-sm text-ink-muted">
-                Deleting your account closes your business and cancels anyone
-                waiting. It cannot be undone.
+                {t("set.deleteWarnProvider")}
               </p>
               <DeleteAccount isProvider />
             </div>

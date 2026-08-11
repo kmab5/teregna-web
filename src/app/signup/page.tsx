@@ -16,8 +16,8 @@ export default async function Page({
     <AuthForm
       mode="signup"
       audience="receiver"
-      title="Create your account"
-      subtitle="One account. Join queues, and run one if you ever want to."
+      titleKey="auth.createTitle"
+      subtitleKey="auth.createTitle"
       nextParam={next}
       errorParam={error}
     />

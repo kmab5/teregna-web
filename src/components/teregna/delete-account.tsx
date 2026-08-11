@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getClient } from "@/lib/supabase/client";
 import { deleteMyAccount } from "@/lib/rpc";
-import { errorMessage } from "@/lib/errors";
+import { useT } from "@/i18n/client";
+import { errorKey } from "@/lib/errors";
 
 const CONFIRM = "DELETE";
 
@@ -24,6 +25,7 @@ const CONFIRM = "DELETE";
  * true here - the other party's history is not the deleter's to erase.
  */
 export function DeleteAccount({ isProvider }: { isProvider: boolean }) {
+  const t = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [typed, setTyped] = useState("");
@@ -35,25 +37,25 @@ export function DeleteAccount({ isProvider }: { isProvider: boolean }) {
       return result;
     },
     onSuccess: (result) => {
-      toast.success("Your account is gone", {
+      toast.success(t("acct.deletedTitle"), {
         description:
           result.cancelled_requests > 0
-            ? `${result.cancelled_requests} open request${result.cancelled_requests === 1 ? "" : "s"} were cancelled.`
+            ? t.plural("acct.deletedBody", result.cancelled_requests)
             : undefined,
       });
       router.push("/");
       router.refresh();
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => toast.error(t(errorKey(e) as never)),
   });
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="destructive">Delete my account</Button>
+        <Button variant="destructive">{t("acct.delete")}</Button>
       </SheetTrigger>
 
-      <SheetContent title="Delete your account">
+      <SheetContent title={t("acct.deleteTitle")}>
         <div className="space-y-4">
           <div className="flex items-start gap-3 rounded-[var(--radius-sm)] bg-destructive/10 p-3">
             <TriangleAlert
@@ -61,40 +63,30 @@ export function DeleteAccount({ isProvider }: { isProvider: boolean }) {
               aria-hidden
             />
             <p className="text-sm text-destructive">
-              This cannot be undone.
+              {t("acct.irreversible")}
             </p>
           </div>
 
           <div className="space-y-2 text-sm text-ink-muted">
-            <p>What happens:</p>
+            <p>{t("acct.whatHappens")}</p>
             <ul className="list-disc space-y-1 pl-5">
-              <li>Your name, phone number and photo are erased.</li>
-              <li>Any request you have waiting right now is cancelled.</li>
+              <li>{t("acct.scrub")}</li>
+              <li>{t("acct.cancels")}</li>
               {isProvider ? (
                 <>
-                  <li>Your business closes and disappears from search.</li>
-                  <li>
-                    Anyone queued with you right now is cancelled and told.
-                  </li>
-                  <li>
-                    Past requests stay in your customers&rsquo; own history,
-                    listed under a deleted account. Those records are theirs as
-                    well as yours, so they are not ours to erase.
-                  </li>
+                  <li>{t("acct.shopCloses")}</li>
+                  <li>{t("acct.queueTold")}</li>
+                  <li>{t("acct.histProvider")}</li>
                 </>
               ) : (
-                <li>
-                  Past requests stay in the provider&rsquo;s records, listed
-                  under a deleted account.
-                </li>
+                <li>{t("acct.histReceiver")}</li>
               )}
             </ul>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="confirm">
-              Type <span className="font-mono font-semibold">{CONFIRM}</span> to
-              confirm
+              {t("acct.confirmLabel", { word: CONFIRM })}
             </Label>
             <Input
               id="confirm"
@@ -111,7 +103,7 @@ export function DeleteAccount({ isProvider }: { isProvider: boolean }) {
               className="flex-1"
               onClick={() => setOpen(false)}
             >
-              Keep my account
+              {t("acct.keep")}
             </Button>
             <Button
               variant="destructive"
@@ -119,7 +111,7 @@ export function DeleteAccount({ isProvider }: { isProvider: boolean }) {
               onClick={() => remove.mutate()}
               disabled={typed !== CONFIRM || remove.isPending}
             >
-              {remove.isPending ? "Deleting…" : "Delete forever"}
+              {remove.isPending ? t("acct.deleting") : t("acct.forever")}
             </Button>
           </div>
         </div>

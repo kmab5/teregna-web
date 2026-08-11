@@ -7,6 +7,8 @@ import { Logo } from "./logo";
 import { AuthDivider, GoogleButton } from "./oauth-buttons";
 import { getClient } from "@/lib/supabase/client";
 import { safeNext } from "@/lib/routes";
+import { useT } from "@/i18n/client";
+import { LanguageSwitcher } from "./language-switcher";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,15 +16,15 @@ import { Label } from "@/components/ui/label";
 export function AuthForm({
   mode,
   audience,
-  title,
-  subtitle,
+  titleKey,
+  subtitleKey,
   nextParam,
   errorParam,
 }: {
   mode: "signin" | "signup";
   audience: "receiver" | "provider";
-  title: string;
-  subtitle: string;
+  titleKey: string;
+  subtitleKey: string;
   /**
    * Read on the server and passed down rather than pulled from
    * useSearchParams(). That hook opts the whole subtree into client-side
@@ -32,6 +34,7 @@ export function AuthForm({
   nextParam?: string;
   errorParam?: string;
 }) {
+  const t = useT();
   const router = useRouter();
   // Sanitised: a stale or hostile ?next must not send someone back to a login
   // page (a client-side loop) or off-site (an open redirect).
@@ -51,9 +54,9 @@ export function AuthForm({
   const callbackError = errorParam;
   const callbackMessage =
     callbackError === "cancelled"
-      ? "You cancelled the Google sign-in. Try again, or use your email."
+      ? t("auth.oauthCancelled")
       : callbackError
-        ? "That sign-in did not complete. Try again, or use your email."
+        ? t("auth.oauthFailed")
         : null;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -77,7 +80,7 @@ export function AuthForm({
       // Say what to do next, not just what failed.
       setError(
         mode === "signin"
-          ? "That email and password do not match an account. Check them, or create an account."
+          ? t("auth.badCredentials")
           : result.error.message,
       );
       return;
@@ -89,12 +92,12 @@ export function AuthForm({
 
   return (
     <main id="main" className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-4 py-12">
-      <Link href="/" className="mb-8 inline-flex" aria-label="Teregna home">
+      <Link href="/" className="mb-8 inline-flex" aria-label={t("nav.home")}>
         <Logo />
       </Link>
 
-      <h1 className="font-display text-2xl font-semibold">{title}</h1>
-      <p className="mt-2 text-ink-muted">{subtitle}</p>
+      <h1 className="font-display text-2xl font-semibold">{t(titleKey as never)}</h1>
+      <p className="mt-2 text-ink-muted">{t(subtitleKey as never)}</p>
 
       {callbackMessage ? (
         <p
@@ -107,25 +110,25 @@ export function AuthForm({
 
       <div className="mt-8 space-y-4">
         <GoogleButton next={next} />
-        <AuthDivider />
+        <AuthDivider label={t("auth.or")} />
       </div>
 
       <form onSubmit={handleSubmit} className="mt-4 space-y-4">
         {mode === "signup" ? (
           <div className="space-y-2">
-            <Label htmlFor="name">Your name</Label>
+            <Label htmlFor="name">{t("auth.name")}</Label>
             <Input
               id="name"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               autoComplete="name"
-              placeholder="Sara Girma"
+              placeholder={t("auth.namePlaceholder")}
             />
           </div>
         ) : null}
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("auth.email")}</Label>
           <Input
             id="email"
             type="email"
@@ -137,7 +140,7 @@ export function AuthForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t("auth.password")}</Label>
           <Input
             id="password"
             type="password"
@@ -159,23 +162,25 @@ export function AuthForm({
         ) : null}
 
         <Button type="submit" size="lg" className="w-full" disabled={busy}>
-          {busy ? "One moment…" : mode === "signup" ? "Create account" : "Sign in"}
+          {busy ? t("common.loading") : mode === "signup" ? t("auth.create") : t("auth.signIn")}
         </Button>
       </form>
+
+      <LanguageSwitcher className="mt-8" />
 
       <p className="mt-6 text-sm text-ink-muted">
         {mode === "signup" ? (
           <>
-            Already have an account?{" "}
+            {t("auth.haveAccount")}{" "}
             <Link href="/login" className="font-medium text-primary hover:underline">
-              Sign in
+              {t("auth.signIn")}
             </Link>
           </>
         ) : (
           <>
-            New here?{" "}
+            {t("auth.newHere")}{" "}
             <Link href="/signup" className="font-medium text-primary hover:underline">
-              Create an account
+              {t("auth.create")}
             </Link>
           </>
         )}

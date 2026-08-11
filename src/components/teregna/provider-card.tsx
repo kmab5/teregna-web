@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { MapPin, Users } from "lucide-react";
-import { queueLabel } from "@/lib/format";
+import { useT } from "@/i18n/client";
 import type { ProviderPublic } from "@/lib/database.types";
 
 export function ProviderCard({ provider }: { provider: ProviderPublic }) {
+  const t = useT();
   const busy = provider.queue_length > 0;
   return (
     <Link
@@ -22,7 +23,7 @@ export function ProviderCard({ provider }: { provider: ProviderPublic }) {
           }
         >
           <Users className="mr-1 inline size-3" aria-hidden />
-          <span className="font-mono tnum">{queueLabel(provider.queue_length)}</span>
+          <span className="font-mono tnum">{provider.queue_length === 0 ? t("queue.none") : t.plural("queue.waiting", provider.queue_length)}</span>
         </span>
       </div>
 

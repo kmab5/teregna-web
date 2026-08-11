@@ -7,32 +7,34 @@ import { Compass, ListChecks, Moon, Store, Sun, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo, Mark } from "./logo";
 import { MobileTabBar, type TabItem } from "./mobile-tab-bar";
+import { useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 
 const TABS: TabItem[] = [
-  { href: "/browse", label: "Browse", icon: Compass },
-  { href: "/requests", label: "My requests", icon: ListChecks },
-  { href: "/provider", label: "My business", icon: Store, matchNested: true },
-  { href: "/account", label: "Account", icon: UserRound },
+  { href: "/browse", label: "nav.browse", icon: Compass },
+  { href: "/requests", label: "nav.myRequests", icon: ListChecks },
+  { href: "/provider", label: "nav.myBusiness", icon: Store, matchNested: true },
+  { href: "/account", label: "nav.account", icon: UserRound },
 ];
 
 export function SiteHeader({ signedIn }: { signedIn: boolean }) {
   const pathname = usePathname();
   const { setTheme } = useTheme();
+  const t = useT();
 
   const desktopLinks = signedIn
     ? [
-        { href: "/browse", label: "Browse" },
-        { href: "/requests", label: "My requests" },
-        { href: "/account", label: "Account" },
+        { href: "/browse", label: "nav.browse" },
+        { href: "/requests", label: "nav.myRequests" },
+        { href: "/account", label: "nav.account" },
       ]
-    : [{ href: "/browse", label: "Browse" }];
+    : [{ href: "/browse", label: "nav.browse" }];
 
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-4">
-          <Link href="/" aria-label="Teregna home" className="shrink-0">
+          <Link href="/" aria-label={t("nav.home")} className="shrink-0">
             {/* The wordmark is dropped below 400px, where it was the difference
                 between fitting and overflowing. The mark alone still reads. */}
             <Logo className="hidden min-[400px]:inline-flex" />
@@ -40,7 +42,7 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
           </Link>
 
           {/* Navigation lives in the bottom bar on phones. */}
-          <nav className="ml-2 hidden items-center gap-1 md:flex" aria-label="Main">
+          <nav className="ml-2 hidden items-center gap-1 md:flex" aria-label={t("nav.main")}>
             {desktopLinks.map((l) => (
               <Link
                 key={l.href}
@@ -53,7 +55,7 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
                     : "text-ink-muted hover:bg-muted hover:text-ink",
                 )}
               >
-                {l.label}
+                {t(l.label as never)}
               </Link>
             ))}
           </nav>
@@ -68,7 +70,7 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
                     : "dark",
                 )
               }
-              aria-label="Switch theme"
+              aria-label={t("common.switchTheme")}
               className="rounded-[var(--radius-sm)] p-2.5 text-ink-muted transition-colors hover:bg-muted hover:text-ink"
             >
               <Moon className="size-4 dark:hidden" aria-hidden />
@@ -77,19 +79,19 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
 
             {signedIn ? (
               <Button asChild variant="outline" size="sm" className="hidden md:inline-flex">
-                <Link href="/provider">Business dashboard</Link>
+                <Link href="/provider">{t("nav.businessDashboard")}</Link>
               </Button>
             ) : (
               <>
                 <Button asChild variant="ghost" size="sm">
-                  <Link href="/login">Sign in</Link>
+                  <Link href="/login">{t("nav.signIn")}</Link>
                 </Button>
                 {/* Full label on desktop, short on phones - "For providers" was
                     170px of a 343px bar on its own. */}
                 <Button asChild size="sm">
                   <Link href="/provider/login">
-                    <span className="hidden sm:inline">For providers</span>
-                    <span className="sm:hidden">Providers</span>
+                    <span className="hidden sm:inline">{t("nav.forProviders")}</span>
+                    <span className="sm:hidden">{t("nav.forProvidersShort")}</span>
                   </Link>
                 </Button>
               </>

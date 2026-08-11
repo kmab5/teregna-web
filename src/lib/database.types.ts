@@ -67,8 +67,24 @@ export interface Item {
    * estimated wait times.
    */
   duration_minutes: number | null;
+  /** Optional physical stock. Null = not tracked. Never blocks a request. */
+  stock: number | null;
   created_at: string;
   updated_at: string;
+}
+
+/**
+ * public.items_view — items plus derived availability.
+ *
+ * `available` is what is left AT THE END OF THE CURRENT QUEUE, not raw stock:
+ * three left with four already queued means the next person gets nothing.
+ */
+export interface ItemView extends Item {
+  /** Quantity the active queue has already committed. */
+  committed: number;
+  /** stock - committed, floored at 0. Null when stock is not tracked. */
+  available: number | null;
+  is_depleted: boolean;
 }
 
 /** public.provider_public - discovery. Queue COUNT only, never identities. */

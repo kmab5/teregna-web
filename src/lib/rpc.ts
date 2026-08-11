@@ -71,6 +71,10 @@ export const setProviderActive = (providerId: string, active: boolean) =>
     p_active: active,
   });
 
+/**
+ * Omitting `stock` leaves it unchanged; passing `stock: null` turns tracking
+ * off. The database distinguishes the two, so callers can too.
+ */
 export const upsertItem = (p: Partial<Item> & { provider_id?: string }) =>
   rpc<Item>("upsert_item", { p });
 

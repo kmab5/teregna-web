@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Outfit, Work_Sans, JetBrains_Mono, Noto_Sans_Ethiopic } from "next/font/google";
 import { AppProviders } from "@/components/providers/app-providers";
+import { I18nProvider } from "@/i18n/client";
+import { getLocale, getMessages } from "@/i18n/server";
+import { getT } from "@/i18n/server";
 import "./globals.css";
 
 /**
@@ -66,12 +69,20 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const [locale, messages, t] = await Promise.all([
+    getLocale(),
+    getMessages(),
+    getT(),
+  ]);
+
   return (
     <html
-      lang="en"
+      // Drives the Ethiopic font via :lang(am), and tells screen readers which
+      // language to pronounce.
+      lang={locale}
       suppressHydrationWarning
       className={`${outfit.variable} ${workSans.variable} ${jetbrains.variable} ${ethiopic.variable}`}
     >
@@ -80,9 +91,11 @@ export default function RootLayout({
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[var(--radius-sm)] focus:bg-primary focus:px-4 focus:py-2 focus:text-on-primary"
         >
-          Skip to content
+          {t("common.skipToContent")}
         </a>
-        <AppProviders>{children}</AppProviders>
+        <I18nProvider locale={locale} messages={messages}>
+          <AppProviders>{children}</AppProviders>
+        </I18nProvider>
       </body>
     </html>
   );

@@ -13,6 +13,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useT } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 
 type Point = { label: string; value: number };
@@ -30,7 +31,7 @@ export function ChartCard({
   description,
   data,
   kind = "bar",
-  valueLabel = "Requests",
+  valueLabel,
   horizontal = false,
 }: {
   title: string;
@@ -40,6 +41,7 @@ export function ChartCard({
   valueLabel?: string;
   horizontal?: boolean;
 }) {
+  const t = useT();
   const [asTable, setAsTable] = useState(false);
   const empty = data.every((d) => d.value === 0);
 
@@ -60,11 +62,11 @@ export function ChartCard({
         >
           {asTable ? (
             <>
-              <ChartLine className="size-3.5" aria-hidden /> Chart
+              <ChartLine className="size-3.5" aria-hidden /> {t("chart.chart")}
             </>
           ) : (
             <>
-              <Table2 className="size-3.5" aria-hidden /> Table
+              <Table2 className="size-3.5" aria-hidden /> {t("chart.table")}
             </>
           )}
         </button>
@@ -72,7 +74,7 @@ export function ChartCard({
 
       {empty ? (
         <p className="py-10 text-center text-sm text-ink-muted">
-          Nothing recorded in this period yet.
+          {t("chart.empty")}
         </p>
       ) : asTable ? (
         <div className="max-h-72 overflow-y-auto">
@@ -81,10 +83,10 @@ export function ChartCard({
             <thead className="sticky top-0 bg-surface">
               <tr className="border-b border-border text-left">
                 <th scope="col" className="py-2 font-medium">
-                  {horizontal ? "Item" : "When"}
+                  {horizontal ? t("chart.item") : t("chart.when")}
                 </th>
                 <th scope="col" className="py-2 text-right font-medium">
-                  {valueLabel}
+                  {valueLabel ?? t("an.requests")}
                 </th>
               </tr>
             </thead>
@@ -127,7 +129,7 @@ export function ChartCard({
                 <Area
                   type="monotone"
                   dataKey="value"
-                  name={valueLabel}
+                  name={valueLabel ?? t("an.requests")}
                   stroke="var(--primary)"
                   fill="var(--primary)"
                   fillOpacity={0.14}
@@ -168,7 +170,7 @@ export function ChartCard({
                     color: "var(--ink)",
                   }}
                 />
-                <Bar dataKey="value" name={valueLabel} fill="var(--primary)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="value" name={valueLabel ?? t("an.requests")} fill="var(--primary)" radius={[4, 4, 0, 0]} />
               </BarChart>
             )}
           </ResponsiveContainer>
