@@ -193,3 +193,5 @@ and fails silently on every PR. Full list in
 [`docs/google-oauth.md`](docs/google-oauth.md).
 
 Point Preview at your staging Supabase branch and Production at production.
+
+### Made with love ❤️ [sami](https://github.com/kmab5)
