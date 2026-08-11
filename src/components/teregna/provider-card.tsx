@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { MapPin, Users } from "lucide-react";
 import { useT } from "@/i18n/client";

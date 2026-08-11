@@ -24,10 +24,24 @@ and anon key to paste in.
 | Command | Does |
 |---------|------|
 | `npm run dev` | Dev server |
-| `npm test` | Route-guard regression tests |
+| `npm test` | Route guards, i18n catalogue parity, server/client boundaries |
 | `npm run verify` | Lint + test + build. Run before pushing |
 | `npm run typecheck` | Standalone `tsc`. See the note below |
 | `npm run build` | Production build |
+
+### Server/client boundaries
+
+`tests/boundaries.test.mts` asserts that any file calling a client-only hook
+declares `"use client"`, and that no client component imports server-only code.
+
+This is a test rather than a build step because **`next build` cannot catch it**.
+A component that calls `useT()` without the directive compiles and type-checks
+cleanly, then throws at *request* time on the server. For a dynamically rendered
+route that means the first real visitor sees the error, not CI.
+
+That is precisely how `provider-card.tsx` shipped broken: it began as a pure
+presentational component with no hooks and no directive, later gained a `useT()`
+call, and the landing page renders it on the server.
 
 ### A note on `npm run typecheck`
 
