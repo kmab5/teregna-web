@@ -134,6 +134,20 @@ src/
 └── proxy.ts                  session refresh + route guards
 ```
 
+## Keeping in step with the mobile app
+
+The two apps copy `database.types.ts`, `errors.ts`, `query-keys.ts` and the
+`i18n/messages` catalogues rather than sharing a package. That is simple, and it
+silently allows drift — the web app once fell **77 keys behind** while mobile
+gained orders, the guide and the theme control.
+
+`npm test` now asserts that every feature shipped on both platforms has its keys
+here. When you add something to one app, port it to the other and run both test
+suites.
+
+Deliberately mobile-only: push notifications, the first-run intro slides, and the
+offline banner. A browser tab has its own answers to all three.
+
 ## Responsive behaviour
 
 Mobile-first, and tested down to **320px**.

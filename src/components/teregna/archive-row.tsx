@@ -3,6 +3,7 @@
 import { RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RequestStatusBadge } from "./request-status-badge";
+import Link from "next/link";
 import { useT } from "@/i18n/client";
 import { useLocaleFormat } from "@/lib/use-locale-format";
 import type { ArchiveRow as ArchiveRowData } from "@/lib/database.types";
@@ -22,7 +23,12 @@ export function ArchiveRow({
     <li className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-border bg-surface p-3 elev-1 sm:flex-row sm:items-start sm:gap-4 sm:p-4">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <p className="font-medium">{row.receiver_name}</p>
+          <Link
+          href={`/orders/${row.id}`}
+          className="font-medium hover:text-primary hover:underline"
+        >
+          {row.receiver_name}
+        </Link>
           <RequestStatusBadge status={row.status} />
           <span className="font-mono tnum text-xs text-ink-muted">
             {dateTime(row.archived_at)}

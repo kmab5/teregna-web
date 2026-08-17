@@ -15,6 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteAccount } from "@/components/teregna/delete-account";
 import { LanguageSwitcher } from "@/components/teregna/language-switcher";
+import { ThemeToggle } from "@/components/teregna/theme-toggle";
+import { Guide } from "@/components/teregna/guide";
 
 export function AccountClient({ email }: { email: string }) {
   const t = useT();
@@ -82,6 +84,24 @@ export function AccountClient({ email }: { email: string }) {
           <Button onClick={() => save.mutate()} disabled={save.isPending}>
             {save.isPending ? t("common.saving") : t("common.save")}
           </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("theme.title")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ThemeToggle />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("guide.title")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Guide />
         </CardContent>
       </Card>
 

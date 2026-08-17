@@ -144,6 +144,12 @@ function RequestCard({
 
         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
           <RequestStatusBadge status={request.status} />
+          <Link
+            href={`/orders/${request.id}`}
+            className="text-sm text-primary hover:underline"
+          >
+            {t("order.open")}
+          </Link>
           {isActive ? (
             <WaitTime since={request.created_at} now={now} />
           ) : (

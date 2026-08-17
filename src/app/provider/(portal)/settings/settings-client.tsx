@@ -16,6 +16,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeleteAccount } from "@/components/teregna/delete-account";
 import { LanguageSwitcher } from "@/components/teregna/language-switcher";
+import { ThemeToggle } from "@/components/teregna/theme-toggle";
+import { Guide } from "@/components/teregna/guide";
 
 export function SettingsClient() {
   const t = useT();
@@ -179,6 +181,24 @@ export function SettingsClient() {
             <Button onClick={() => saveProfile.mutate()} disabled={saveProfile.isPending}>
               {saveProfile.isPending ? t("common.saving") : t("set.saveDetails")}
             </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("theme.title")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ThemeToggle />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("guide.title")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Guide />
           </CardContent>
         </Card>
 

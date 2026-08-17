@@ -122,6 +122,29 @@ check("placeholders match between locales", () => {
   assert.deepEqual(drift, [], `placeholder drift: ${drift.join("; ")}`);
 });
 
+check("catalogue is in step with the mobile app", () => {
+  /*
+   * The two apps copy their catalogue rather than sharing a package, so keys
+   * added on one side are silently absent on the other. That is exactly what
+   * happened: the web app fell 77 keys behind while mobile gained orders, the
+   * guide and the theme control.
+   *
+   * The mobile repo is not present in CI, so this only asserts the SHAPE that
+   * drift produces - a web catalogue missing whole feature namespaces. Anything
+   * shipped on both platforms must exist here.
+   */
+  const required = [
+    "order.title", "order.total", "order.expected",
+    "guide.title", "guide.customer", "guide.provider",
+    "theme.title", "theme.light", "theme.dark", "theme.system",
+    "auth.phone", "auth.phoneHint",
+    "hist.title",
+    "common.retry",
+  ];
+  const missing = required.filter((k) => !(k in en));
+  assert.deepEqual(missing, [], `web is behind mobile: ${missing.join(", ")}`);
+});
+
 check("every plural key has both .one and .other", () => {
   const bases = new Set(
     enKeys.filter((k) => k.endsWith(".one")).map((k) => k.slice(0, -4)),

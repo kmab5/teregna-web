@@ -13,6 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+/** Permissive on purpose: local formats vary and a strict pattern rejects real numbers. */
+const PHONE_RE = /^[+0-9][0-9\s-]{6,}$/;
+
 export function AuthForm({
   mode,
   audience,
@@ -46,6 +49,7 @@ export function AuthForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -70,7 +74,14 @@ export function AuthForm({
         ? await supabase.auth.signUp({
             email,
             password,
-            options: { data: { display_name: displayName.trim() || undefined } },
+            options: {
+              data: {
+                display_name: displayName.trim() || undefined,
+                // Read by the provisioning trigger, so the profile has a number
+                // from the moment the account exists.
+                phone: phone.trim(),
+              },
+            },
           })
         : await supabase.auth.signInWithPassword({ email, password });
 
@@ -127,6 +138,27 @@ export function AuthForm({
           </div>
         ) : null}
 
+        {/*
+          Required, not optional. The product exists so two people can meet;
+          without a number a provider finishes the job and has no way to say so.
+        */}
+        {mode === "signup" ? (
+          <div className="space-y-2">
+            <Label htmlFor="phone">{t("auth.phone")}</Label>
+            <Input
+              id="phone"
+              type="tel"
+              inputMode="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              autoComplete="tel"
+              placeholder="+251 91 234 5678"
+              className="font-mono"
+            />
+            <p className="text-xs text-ink-muted">{t("auth.phoneHint")}</p>
+          </div>
+        ) : null}
+
         <div className="space-y-2">
           <Label htmlFor="email">{t("auth.email")}</Label>
           <Input
@@ -161,7 +193,12 @@ export function AuthForm({
           </p>
         ) : null}
 
-        <Button type="submit" size="lg" className="w-full" disabled={busy}>
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full"
+          disabled={busy || (mode === "signup" && !PHONE_RE.test(phone.trim()))}
+        >
           {busy ? t("common.loading") : mode === "signup" ? t("auth.create") : t("auth.signIn")}
         </Button>
       </form>

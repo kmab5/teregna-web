@@ -33,6 +33,9 @@ export interface Profile {
   avatar_url: string | null;
   phone: string | null;
   locale: "en" | "am";
+  /** Expo push token, set by the mobile app. Unused on web, kept so the type matches. */
+  push_token: string | null;
+  push_platform: "ios" | "android" | "web" | null;
   created_at: string;
   updated_at: string;
 }
@@ -168,3 +171,33 @@ export interface Analytics {
 
 export const ACTIVE_STATUSES: RequestStatus[] = ["queued", "in_progress"];
 export const TERMINAL_STATUSES: RequestStatus[] = ["completed", "cancelled"];
+
+/**
+ * public.order_detail — one order with the counterparty contact each side needs.
+ *
+ * Phone numbers are gated twice, by role AND by status: a provider sees the
+ * customer number for a request in their queue, a customer sees the provider
+ * number only once work has started. Null means "not yours to see", not "not
+ * recorded".
+ */
+export interface OrderDetail {
+  id: string;
+  provider_id: string;
+  receiver_id: string | null;
+  status: RequestStatus;
+  seq: number;
+  note: string | null;
+  created_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+  cancelled_at: string | null;
+  provider_name: string;
+  provider_location: string | null;
+  receiver_name: string;
+  receiver_phone: string | null;
+  provider_phone: string | null;
+  items: RequestItemSnapshot[];
+  total_price: number;
+  /** Sum of each item duration times its quantity, in minutes. 0 when unset. */
+  expected_minutes: number;
+}

@@ -6,6 +6,7 @@ import { RequestStatusBadge } from "./request-status-badge";
 import { WaitTime } from "./wait-time";
 import { useT } from "@/i18n/client";
 import { useLocaleFormat } from "@/lib/use-locale-format";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { QueueRow as QueueRowData } from "@/lib/database.types";
 
@@ -59,7 +60,12 @@ export function QueueRow({
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <p className="font-medium">{row.receiver_name}</p>
+          <Link
+            href={`/orders/${row.id}`}
+            className="font-medium hover:text-primary hover:underline"
+          >
+            {row.receiver_name}
+          </Link>
           <RequestStatusBadge status={row.status} />
         </div>
 
