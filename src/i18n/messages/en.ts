@@ -377,6 +377,10 @@ export const en = {
   "hist.all": "All",
   "hist.active": "Active",
 
+  "phone.gateTitle": "One more thing",
+  "phone.gateBody": "Providers need a number to reach you when your request is done. It is never shown publicly.",
+  "phone.gateSave": "Save and continue",
+
   "err.unauthenticated": "Your session ended. Sign in to pick up where you left off.",
   "err.not_owner": "That request is no longer available to you.",
   "err.provider_inactive": "This provider has stopped taking requests for now.",

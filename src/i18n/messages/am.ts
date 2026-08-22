@@ -358,6 +358,10 @@ export const am: Messages = {
   "hist.all": "ሁሉም",
   "hist.active": "ንቁ",
 
+  "phone.gateTitle": "አንድ ተጨማሪ ነገር",
+  "phone.gateBody": "ጥያቄዎ ሲጠናቀቅ አገልግሎት ሰጪዎች የሚያገኙዎት ቁጥር ያስፈልጋቸዋል። በአደባባይ አይታይም።",
+  "phone.gateSave": "አስቀምጥና ቀጥል",
+
   "err.unauthenticated": "ክፍለ ጊዜዎ አብቅቷል። ካቆሙበት ለመቀጠል ይግቡ።",
   "err.not_owner": "ያ ጥያቄ ለእርስዎ አይገኝም።",
   "err.provider_inactive": "ይህ አገልግሎት ሰጪ ለአሁን ጥያቄ መቀበል አቁሟል።",
